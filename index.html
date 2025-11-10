@@ -3,28 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creative Digital Agency</title>
+    <title>DigitalCreative - Secure Access</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Background with wallpaper -->
-    <div class="background">
-        <div class="background-overlay"></div>
+    <!-- Login/Signup Gateway (Shown First) -->
+    <div id="gateway" class="gateway">
+        <div class="gateway-background">
+            <div class="background-overlay"></div>
+        </div>
+        <div class="gateway-container">
+            <div class="gateway-content">
+                <h1>Welcome to DigitalCreative</h1>
+                <p>Please login or sign up to access our services</p>
+                
+                <div class="gateway-tabs">
+                    <button class="gateway-tab-btn active" data-tab="login">Login</button>
+                    <button class="gateway-tab-btn" data-tab="signup">Sign Up</button>
+                </div>
+                
+                <!-- Login Form -->
+                <form id="gatewayLoginForm" class="gateway-form active">
+                    <div class="form-group">
+                        <label for="gatewayEmail">Email</label>
+                        <input type="email" id="gatewayEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gatewayPassword">Password</label>
+                        <input type="password" id="gatewayPassword" required>
+                    </div>
+                    <div class="form-options">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="gatewayRemember">
+                            <span class="checkmark"></span>
+                            Remember me
+                        </label>
+                    </div>
+                    <button type="submit" class="gateway-submit-btn">Login to Website</button>
+                    <div id="gatewayLoginMessage" class="message"></div>
+                </form>
+                
+                <!-- Signup Form -->
+                <form id="gatewaySignupForm" class="gateway-form">
+                    <div class="form-group">
+                        <label for="gatewaySignupName">Full Name</label>
+                        <input type="text" id="gatewaySignupName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gatewaySignupEmail">Email</label>
+                        <input type="email" id="gatewaySignupEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gatewaySignupPassword">Password</label>
+                        <input type="password" id="gatewaySignupPassword" required>
+                        <div class="password-strength">
+                            <div class="strength-bar">
+                                <div class="strength-fill"></div>
+                            </div>
+                            <div class="strength-text"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="gatewayConfirmPassword">Confirm Password</label>
+                        <input type="password" id="gatewayConfirmPassword" required>
+                        <div class="password-match"></div>
+                    </div>
+                    <div class="form-options">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="gatewayAgreeTerms" required>
+                            <span class="checkmark"></span>
+                            I agree to the Terms & Conditions
+                        </label>
+                    </div>
+                    <button type="submit" class="gateway-submit-btn">Create Account & Enter</button>
+                    <div id="gatewaySignupMessage" class="message"></div>
+                </form>
+            </div>
+        </div>
     </div>
-    
-    <!-- Main Content Wrapper -->
-    <div class="main-content">
+
+    <!-- Main Website Content (Hidden until login) -->
+    <div id="mainWebsite" class="main-website hidden">
+        <!-- Background with wallpaper -->
+        <div class="background">
+            <div class="background-overlay"></div>
+        </div>
+        
         <!-- Navigation -->
         <nav class="navbar">
             <div class="nav-container">
                 <h1 class="logo">Digital<span>Creative</span></h1>
                 <ul class="nav-menu">
                     <li><a href="#" class="nav-link">Home</a></li>
-                    <li><a href="#" class="nav-link">Services</a></li>
+                    <li><a href="#services" class="nav-link">Services</a></li>
                     <li><a href="#" class="nav-link">Portfolio</a></li>
                     <li><a href="#" class="nav-link">About</a></li>
                     <li><a href="#" class="nav-link">Contact</a></li>
-                    <li><button id="loginBtn" class="login-btn">Login</button></li>
+                    <li><button id="logoutBtn" class="login-btn">Logout</button></li>
                 </ul>
                 <div class="hamburger">
                     <span class="bar"></span>
@@ -44,9 +119,10 @@
         </section>
 
         <!-- Services Section -->
-        <section class="services">
+        <section id="services" class="services">
             <h2 class="section-title">Our Services</h2>
             <div class="services-container">
+                <!-- Web Design Service -->
                 <div class="service-card" data-service="web-design">
                     <div class="service-icon">
                         <svg viewBox="0 0 24 24">
@@ -57,9 +133,10 @@
                     </div>
                     <h3>Web Design</h3>
                     <p>Beautiful, responsive websites that captivate your audience</p>
-                    <button class="service-btn">Learn More</button>
+                    <button class="service-btn" onclick="openServicePage('web-design')">Learn More</button>
                 </div>
                 
+                <!-- SEO Service -->
                 <div class="service-card" data-service="seo">
                     <div class="service-icon">
                         <svg viewBox="0 0 24 24">
@@ -69,9 +146,10 @@
                     </div>
                     <h3>SEO</h3>
                     <p>Boost your visibility and rank higher in search results</p>
-                    <button class="service-btn">Learn More</button>
+                    <button class="service-btn" onclick="openServicePage('seo')">Learn More</button>
                 </div>
                 
+                <!-- Branding Service -->
                 <div class="service-card" data-service="branding">
                     <div class="service-icon">
                         <svg viewBox="0 0 24 24">
@@ -81,9 +159,10 @@
                     </div>
                     <h3>Branding</h3>
                     <p>Build a memorable brand identity that stands out</p>
-                    <button class="service-btn">Learn More</button>
+                    <button class="service-btn" onclick="openServicePage('branding')">Learn More</button>
                 </div>
                 
+                <!-- Development Service -->
                 <div class="service-card" data-service="development">
                     <div class="service-icon">
                         <svg viewBox="0 0 24 24">
@@ -93,10 +172,245 @@
                     </div>
                     <h3>Development</h3>
                     <p>Robust web applications with modern technologies</p>
-                    <button class="service-btn">Learn More</button>
+                    <button class="service-btn" onclick="openServicePage('development')">Learn More</button>
                 </div>
             </div>
         </section>
+
+        <!-- Service Pages -->
+        <div id="service-pages">
+            <!-- Web Design Page -->
+            <div id="web-design-page" class="service-page hidden">
+                <div class="service-page-content">
+                    <button class="back-btn" onclick="closeServicePage()">← Back to Services</button>
+                    <div class="service-hero">
+                        <h2>Web Design Services</h2>
+                        <p class="service-subtitle">Create stunning digital experiences that convert</p>
+                    </div>
+                    
+                    <div class="service-details-content">
+                        <div class="service-description">
+                            <h3>Transform Your Digital Presence</h3>
+                            <p>Discover the ultimate web design solution that puts professional tools right at your fingertips. Designed for efficiency and creativity, we empower you to produce stunning visual content for any purpose, from social media to marketing campaigns, with unparalleled ease.</p>
+                        </div>
+
+                        <div class="features-section">
+                            <h3>Why Choose Our Web Design Services?</h3>
+                            <div class="features-grid">
+                                <div class="feature-item">
+                                    <span class="feature-icon">🎨</span>
+                                    <div>
+                                        <h4>Unrivaled Ease of Use</h4>
+                                        <p>Intuitive drag-and-drop interface ensures anyone can create breathtaking visuals</p>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">📱</span>
+                                    <div>
+                                        <h4>Responsive Design</h4>
+                                        <p>Perfectly optimized for all devices and screen sizes</p>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">⚡</span>
+                                    <div>
+                                        <h4>Fast Performance</h4>
+                                        <p>Lightning-fast loading times for better user experience</p>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">🎯</span>
+                                    <div>
+                                        <h4>SEO Optimized</h4>
+                                        <p>Built with best practices for search engine visibility</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cta-section">
+                            <h3>Ready to Transform Your Website?</h3>
+                            <p>Let's create something amazing together</p>
+                            <button class="cta-btn" onclick="contactUs()">Start Your Project</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEO Page -->
+            <div id="seo-page" class="service-page hidden">
+                <div class="service-page-content">
+                    <button class="back-btn" onclick="closeServicePage()">← Back to Services</button>
+                    <div class="service-hero">
+                        <h2>SEO Optimization</h2>
+                        <p class="service-subtitle">Boost your online visibility and rankings</p>
+                    </div>
+                    
+                    <div class="service-details-content">
+                        <div class="service-description">
+                            <h3>Dominate Search Rankings</h3>
+                            <p>Unlock unmatched growth with our comprehensive SEO tools and strategies. Whether you're just starting or scaling your business, we equip you with everything needed for success. Boost visibility, enhance engagement, and optimize your content.</p>
+                        </div>
+
+                        <div class="features-section">
+                            <h3>Our SEO Toolkit</h3>
+                            <div class="features-grid">
+                                <div class="feature-item">
+                                    <span class="feature-icon">🔍</span>
+                                    <div>
+                                        <h4>Keyword Research</h4>
+                                        <p>Advanced keyword planning and research tools</p>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">📊</span>
+                                    <div>
+                                        <h4>Analytics & Tracking</h4>
+                                        <p>Comprehensive performance monitoring</p>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">🎯</span>
+                                    <div>
+                                        <h4>Rank Tracking</h4>
+                                        <p>Monitor search engine rankings and competitors</p>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">🚀</span>
+                                    <div>
+                                        <h4>Performance Boost</h4>
+                                        <p>Technical SEO optimization for better results</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cta-section">
+                            <h3>Ready to Boost Your Rankings?</h3>
+                            <p>Let's optimize your online presence</p>
+                            <button class="cta-btn" onclick="contactUs()">Get SEO Audit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Branding Page -->
+            <div id="branding-page" class="service-page hidden">
+                <div class="service-page-content">
+                    <button class="back-btn" onclick="closeServicePage()">← Back to Services</button>
+                    <div class="service-hero">
+                        <h2>Brand Identity</h2>
+                        <p class="service-subtitle">Build a memorable brand that stands out</p>
+                    </div>
+                    
+                    <div class="service-details-content">
+                        <div class="service-description">
+                            <h3>Create Your Unique Identity</h3>
+                            <p>A one-stop shop for designing and developing your brand identity! With thousands of templates and resources, create logos and designs that represent your company and connect with your target audience.</p>
+                        </div>
+
+                        <div class="features-section">
+                            <h3>Branding Solutions</h3>
+                            <div class="features-grid">
+                                <div class="feature-item">
+                                    <span class="feature-icon">🎨</span>
+                                    <div>
+                                        <h4>Logo Design</h4>
+                                        <p>1000+ creative templates and custom creation</p>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">📱</span>
+                                    <div>
+                                        <h4>Brand Guidelines</h4>
+                                        <p>Complete identity system with colors and fonts</p>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">🎯</span>
+                                    <div>
+                                        <h4>Business Identity</h4>
+                                        <p>Professional branding for all business sectors</p>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">✨</span>
+                                    <div>
+                                        <h4>Custom Design</h4>
+                                        <p>Personalized solutions for your business needs</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cta-section">
+                            <h3>Ready to Build Your Brand?</h3>
+                            <p>Let's create an identity that resonates</p>
+                            <button class="cta-btn" onclick="contactUs()">Start Branding</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Development Page -->
+            <div id="development-page" class="service-page hidden">
+                <div class="service-page-content">
+                    <button class="back-btn" onclick="closeServicePage()">← Back to Services</button>
+                    <div class="service-hero">
+                        <h2>Web Development</h2>
+                        <p class="service-subtitle">Robust applications with modern technologies</p>
+                    </div>
+                    
+                    <div class="service-details-content">
+                        <div class="service-description">
+                            <h3>Build Powerful Web Solutions</h3>
+                            <p>Learn web development technologies or build your own website using modern front-end technologies. Our curated courses and development services help you master frontend web development and create beautiful, functional websites.</p>
+                        </div>
+
+                        <div class="features-section">
+                            <h3>Development Services</h3>
+                            <div class="features-grid">
+                                <div class="feature-item">
+                                    <span class="feature-icon">💻</span>
+                                    <div>
+                                        <h4>Frontend Development</h4>
+                                        <p>Modern HTML, CSS, and JavaScript interfaces</p>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">⚡</span>
+                                    <div>
+                                        <h4>Backend Solutions</h4>
+                                        <p>Robust server-side development and databases</p>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">📱</span>
+                                    <div>
+                                        <h4>Responsive Design</h4>
+                                        <p>Mobile-first approach for all devices</p>
+                                    </div>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">🔧</span>
+                                    <div>
+                                        <h4>Full-Stack Development</h4>
+                                        <p>Complete web application development</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cta-section">
+                            <h3>Ready to Build Your Project?</h3>
+                            <p>Let's develop your digital solution</p>
+                            <button class="cta-btn" onclick="contactUs()">Start Development</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Footer -->
         <footer class="footer">
@@ -109,7 +423,7 @@
                     <h4>Quick Links</h4>
                     <ul>
                         <li><a href="#">Home</a></li>
-                        <li><a href="#">Services</a></li>
+                        <li><a href="#services">Services</a></li>
                         <li><a href="#">Portfolio</a></li>
                         <li><a href="#">About Us</a></li>
                     </ul>
@@ -124,86 +438,6 @@
                 <p>&copy; 2023 DigitalCreative. All rights reserved.</p>
             </div>
         </footer>
-    </div>
-
-    <!-- Service Details Modal -->
-    <div id="serviceModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <div id="modal-body">
-                <!-- Content will be inserted here by JavaScript -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Login/Signup Modal -->
-    <div id="authModal" class="modal">
-        <div class="auth-modal-content">
-            <span class="close">&times;</span>
-            <div class="auth-container">
-                <div class="auth-tabs">
-                    <button class="tab-btn active" data-tab="login">Login</button>
-                    <button class="tab-btn" data-tab="signup">Sign Up</button>
-                </div>
-                
-                <!-- Login Form -->
-                <form id="loginForm" class="auth-form active">
-                    <div class="form-group">
-                        <label for="loginEmail">Email</label>
-                        <input type="email" id="loginEmail" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="loginPassword">Password</label>
-                        <input type="password" id="loginPassword" required>
-                        <div class="password-strength"></div>
-                    </div>
-                    <div class="form-options">
-                        <label class="checkbox-container">
-                            <input type="checkbox" id="rememberMe">
-                            <span class="checkmark"></span>
-                            Remember me
-                        </label>
-                        <a href="#" class="forgot-password">Forgot password?</a>
-                    </div>
-                    <button type="submit" class="auth-submit-btn">Login</button>
-                </form>
-                
-                <!-- Signup Form -->
-                <form id="signupForm" class="auth-form">
-                    <div class="form-group">
-                        <label for="signupName">Full Name</label>
-                        <input type="text" id="signupName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signupEmail">Email</label>
-                        <input type="email" id="signupEmail" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signupPassword">Password</label>
-                        <input type="password" id="signupPassword" required>
-                        <div class="password-strength">
-                            <div class="strength-bar">
-                                <div class="strength-fill"></div>
-                            </div>
-                            <div class="strength-text"></div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmPassword">Confirm Password</label>
-                        <input type="password" id="confirmPassword" required>
-                        <div class="password-match"></div>
-                    </div>
-                    <div class="form-options">
-                        <label class="checkbox-container">
-                            <input type="checkbox" id="agreeTerms" required>
-                            <span class="checkmark"></span>
-                            I agree to the <a href="#">Terms & Conditions</a>
-                        </label>
-                    </div>
-                    <button type="submit" class="auth-submit-btn">Sign Up</button>
-                </form>
-            </div>
-        </div>
     </div>
 
     <script src="script.js"></script>
