@@ -9,21 +9,24 @@
 body {
     overflow-x: hidden;
     color: #fff;
+    min-height: 100vh;
 }
 
-/* Background with wallpaper - FIXED */
+/* Background with wallpaper - COMPLETELY FIXED */
 .background {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('https://i.ibb.co/Kz5HxxGh/3bc4195786d4.jpg');
+    background-image: url('https://i.ibb.co/7NTnG4tS/746af17576cb.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
     z-index: -2;
+    /* Remove any transform that might cause movement */
+    transform: none !important;
 }
 
 .background-overlay {
@@ -34,6 +37,12 @@ body {
     height: 100%;
     background: rgba(0, 0, 0, 0.6);
     z-index: -1;
+}
+
+/* Ensure all sections have proper background coverage */
+.hero, .services, .footer {
+    position: relative;
+    z-index: 1;
 }
 
 /* Navigation */
@@ -121,6 +130,7 @@ body {
     justify-content: center;
     text-align: center;
     padding: 0 2rem;
+    position: relative;
 }
 
 .hero-content h2 {
@@ -159,6 +169,7 @@ body {
     padding: 5rem 2rem;
     max-width: 1200px;
     margin: 0 auto;
+    position: relative;
 }
 
 .section-title {
@@ -507,6 +518,7 @@ body {
     background: rgba(0, 0, 0, 0.8);
     padding: 3rem 2rem 1rem;
     margin-top: 5rem;
+    position: relative;
 }
 
 .footer-content {
@@ -545,6 +557,17 @@ body {
     margin-top: 3rem;
     padding-top: 1rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure background covers entire viewport */
+html, body {
+    height: 100%;
+}
+
+/* Additional sections will automatically have background coverage */
+section {
+    position: relative;
+    z-index: 1;
 }
 
 /* Responsive Design */
@@ -607,4 +630,11 @@ body {
         padding: 0.8rem 1.5rem;
         font-size: 1rem;
     }
+}
+
+/* Extra insurance for background coverage */
+.main-content {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
 }
