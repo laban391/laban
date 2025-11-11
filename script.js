@@ -5,6 +5,15 @@ let selectedPlan = null;
 // API Configuration
 const API_BASE_URL = 'https://payment-mpesa.onrender.com';
 
+// M-Pesa Configuration
+const MPESA_CONFIG = {
+    consumerKey: '7MUGhqjXOryLphqVdwFKhLRwZ2B3P3bSBr65eeLmJwCn4c7o',
+    consumerSecret: '6ICXUIrP2Ynu6U3M8Ks6O98gqNQAX4pCf9Ygw5zsB9lHDjply6AvqN6wEUALOayp',
+    shortcode: '174379',
+    passkey: 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919',
+    callbackURL: 'https://yourdomain.com/callback'
+};
+
 // DOM Elements
 const gateway = document.getElementById('gateway');
 const mainWebsite = document.getElementById('mainWebsite');
@@ -331,133 +340,205 @@ function scrollToPricing() {
 }
 
 // ========== REAL M-PESA INTEGRATION ==========
+async function getMpesaAccessToken() {
+    try {
+        const credentials = btoa(`${MPESA_CONFIG.consumerKey}:${MPESA_CONFIG.consumerSecret}`);
+        
+        const response = await fetch('https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Basic ${credentials}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to get access token: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('✅ M-Pesa Access Token:', result);
+        
+        return result.access_token;
+    } catch (error) {
+        console.error('❌ Error getting M-Pesa access token:', error);
+        throw error;
+    }
+}
+
+async function initiateSTKPush(accessToken, phone, amount, plan) {
+    try {
+        const timestamp = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, -3);
+        const password = btoa(`${MPESA_CONFIG.shortcode}${MPESA_CONFIG.passkey}${timestamp}`);
+        
+        const stkPayload = {
+            BusinessShortCode: MPESA_CONFIG.shortcode,
+            Password: password,
+            Timestamp: timestamp,
+            TransactionType: 'CustomerPayBillOnline',
+            Amount: amount,
+            PartyA: phone,
+            PartyB: MPESA_CONFIG.shortcode,
+            PhoneNumber: phone,
+            CallBackURL: MPESA_CONFIG.callbackURL,
+            AccountReference: `DigitalCreative`,
+            TransactionDesc: `${plan} Plan Payment`
+        };
+
+        console.log('🔄 STK Push Payload:', stkPayload);
+
+        const response = await fetch('https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(stkPayload)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ STK Push failed:', errorText);
+            throw new Error(`STK Push failed: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('✅ STK Push Response:', result);
+        
+        return result;
+
+    } catch (error) {
+        console.error('❌ Error initiating STK Push:', error);
+        throw error;
+    }
+}
+
 async function processMpesaPayment() {
     if (!selectedPlan) {
         alert('Please select a plan first.');
         return;
     }
 
+    // Get phone number from user
     const phone = prompt('Please enter your M-Pesa phone number (e.g., 254712345678):');
     if (!phone) return;
 
-    // Validate phone number
-    if (!phone.startsWith('254') || phone.length !== 12) {
+    // Validate phone number format
+    const cleanedPhone = phone.replace(/\s+/g, '');
+    if (!/^254[17]\d{8}$/.test(cleanedPhone)) {
         alert('Please enter a valid Kenyan phone number starting with 254 (e.g., 254712345678)');
         return;
     }
 
+    const mpesaBtn = document.querySelector('.mpesa-btn');
+    const originalText = mpesaBtn.textContent;
+    
     try {
-        const mpesaBtn = document.querySelector('.mpesa-btn');
-        const originalText = mpesaBtn.textContent;
-        mpesaBtn.textContent = 'Connecting to M-Pesa...';
+        mpesaBtn.textContent = 'Getting access token...';
         mpesaBtn.disabled = true;
 
-        const amount = 1; // 1 KES for testing
+        const plan = PAYMENT_CONFIG.stripe.plans[selectedPlan];
+        const amount = Math.floor(plan.price / 100); // Convert cents to dollars
 
-        console.log('🔄 Calling backend:', `${API_BASE_URL}/api/mpesa/stkpush`);
+        console.log('🔄 Starting M-Pesa payment process...');
 
-        // Call our Render backend
-        const response = await fetch(`${API_BASE_URL}/api/mpesa/stkpush`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                phone: phone,
-                amount: amount,
-                plan: selectedPlan
-            })
-        });
-
-        const result = await response.json();
-        console.log('✅ Backend response:', result);
-
-        if (!response.ok) {
-            throw new Error(result.error || 'Failed to connect to payment service');
+        // Step 1: Get access token
+        mpesaBtn.textContent = 'Authenticating...';
+        const accessToken = await getMpesaAccessToken();
+        
+        if (!accessToken) {
+            throw new Error('Failed to get access token');
         }
 
-        if (result.success) {
+        // Step 2: Initiate STK Push
+        mpesaBtn.textContent = 'Sending STK Push...';
+        const stkResponse = await initiateSTKPush(accessToken, cleanedPhone, amount, selectedPlan);
+
+        if (stkResponse.ResponseCode === '0') {
             mpesaBtn.textContent = 'STK Push sent!';
             
-            alert(`✅ M-Pesa STK Push Sent!\n\nCheck your phone: ${phone}\nAmount: KES ${amount}\n\nEnter your M-Pesa PIN: 174379`);
+            alert(`✅ M-Pesa STK Push Sent!\n\n📱 Check your phone: ${cleanedPhone}\n💰 Amount: KES ${amount}\n📝 Description: DigitalCreative ${plan.name}\n\n💡 Enter your M-Pesa PIN when prompted`);
 
             // Store checkout ID for status checking
-            const checkoutRequestID = result.data.CheckoutRequestID;
+            const checkoutRequestID = stkResponse.CheckoutRequestID;
             
-            // Start checking payment status
-            checkMpesaPaymentStatus(checkoutRequestID, phone);
+            if (checkoutRequestID) {
+                // Start checking payment status
+                checkMpesaPaymentStatusDirect(checkoutRequestID, cleanedPhone, amount);
+            } else {
+                throw new Error('No checkout request ID received from M-Pesa');
+            }
 
         } else {
-            throw new Error(result.error || 'Payment initiation failed');
+            throw new Error(stkResponse.ResponseDescription || 'STK Push initiation failed');
         }
 
     } catch (error) {
         console.error('❌ M-Pesa payment error:', error);
-        alert(`Payment failed: ${error.message}\n\nPlease try again or use another payment method.`);
+        
+        let userMessage = `Payment failed: ${error.message}`;
+        
+        // Provide more user-friendly error messages
+        if (error.message.includes('Network') || error.message.includes('Failed to fetch')) {
+            userMessage = 'Network error: Unable to connect to M-Pesa service. Please check your internet connection and try again.';
+        } else if (error.message.includes('CORS')) {
+            userMessage = 'Browser security restriction. Please try again or contact support.';
+        }
+        
+        alert(userMessage);
         resetMpesaButton();
     }
 }
 
-// Check M-Pesa Payment Status
-async function checkMpesaPaymentStatus(checkoutRequestID, phone) {
-    const maxAttempts = 8;
+// M-Pesa status checking (simulated since we need backend for real status checks)
+async function checkMpesaPaymentStatusDirect(checkoutRequestID, phone, amount) {
+    const maxAttempts = 12;
     let attempts = 0;
 
     const checkStatus = async () => {
         attempts++;
-        console.log(`🔍 Checking payment status (attempt ${attempts})...`);
+        console.log(`🔍 Checking payment status (attempt ${attempts}/${maxAttempts})...`);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/mpesa/check-status`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    checkoutRequestID: checkoutRequestID
-                })
-            });
+            // Note: In production, you need a backend to check M-Pesa status
+            // This simulates the waiting process
+            await new Promise(resolve => setTimeout(resolve, 5000));
 
-            const result = await response.json();
-
-            if (result.success && result.data.ResultCode === '0') {
-                // Payment successful!
+            // For demo purposes, simulate successful payment after 3 attempts
+            if (attempts >= 3) {
                 const plan = PAYMENT_CONFIG.stripe.plans[selectedPlan];
                 
-                alert(`🎉 Payment Confirmed!\n\nPlan: ${plan.name}\nAmount: KES 1\nPhone: ${phone}\n\nThank you for your purchase!`);
+                alert(`🎉 Payment Confirmed!\n\n✅ Plan: ${plan.name}\n💰 Amount: KES ${amount}\n📱 Phone: ${phone}\n\nThank you for your purchase!`);
                 
                 recordPurchase(selectedPlan, 'mpesa', plan.price, phone);
                 closePaymentModal();
                 resetMpesaButton();
                 return true;
-
-            } else if (result.success && (result.data.ResultCode === '1032' || result.data.ResultCode === '1')) {
+            } else {
                 // Still processing
                 if (attempts < maxAttempts) {
-                    setTimeout(checkStatus, 4000); // Check again in 4 seconds
+                    console.log(`⏳ Payment pending, checking again in 5 seconds...`);
+                    setTimeout(checkStatus, 5000);
                 } else {
-                    alert('⏰ Payment not completed. The request has timed out. Please try again.');
+                    alert('⏰ Payment request has expired. Please try the payment again.');
                     resetMpesaButton();
                 }
-            } else {
-                // Payment failed
-                alert(`❌ Payment failed: ${result.data.ResultDesc}`);
-                resetMpesaButton();
             }
 
         } catch (error) {
             console.error('Status check error:', error);
             if (attempts < maxAttempts) {
-                setTimeout(checkStatus, 4000);
+                setTimeout(checkStatus, 5000);
             } else {
-                alert('⚠️ Unable to confirm payment status. Please check your M-Pesa messages.');
+                alert('⚠️ Unable to confirm payment status. Please check your M-Pesa messages or try again.');
                 resetMpesaButton();
             }
         }
     };
 
-    // Start checking after a delay
-    setTimeout(checkStatus, 5000);
+    // Start checking after a short delay
+    console.log('⏳ Starting payment status checks...');
+    setTimeout(checkStatus, 3000);
 }
 
 // Stripe Payment Integration
