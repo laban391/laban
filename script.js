@@ -268,8 +268,38 @@ function closeServicePage() {
 }
 
 function contactUs() {
-    alert('Thank you for your interest! Please email us at info@digitalcreative.com to get started.');
+    // Redirect to WhatsApp
+    const phoneNumber = '+18002428478';
+    const message = 'Hello! I am interested in your services.';
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
     closeServicePage();
+}
+
+// WhatsApp Redirection Functions
+function redirectToWhatsApp(serviceType) {
+    const phoneNumber = '+18002428478';
+    let message = '';
+    
+    switch(serviceType) {
+        case 'seo':
+            message = 'Hello! I am interested in your SEO Audit service.';
+            break;
+        case 'web-design':
+            message = 'Hello! I am interested in starting a Web Design project.';
+            break;
+        case 'branding':
+            message = 'Hello! I am interested in your Branding services.';
+            break;
+        case 'development':
+            message = 'Hello! I am interested in your Development services.';
+            break;
+        default:
+            message = 'Hello! I am interested in your services.';
+    }
+    
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
 }
 
 // Event Listeners
@@ -316,6 +346,19 @@ document.addEventListener('DOMContentLoaded', function() {
             if (hamburger) hamburger.classList.remove('active');
             if (navMenu) navMenu.classList.remove('active');
         });
+    });
+    
+    // Add WhatsApp redirection to service buttons
+    document.querySelectorAll('.cta-btn').forEach(button => {
+        if (button.textContent === 'Get SEO Audit') {
+            button.onclick = function() { redirectToWhatsApp('seo'); };
+        } else if (button.textContent === 'Start Your Project') {
+            button.onclick = function() { redirectToWhatsApp('web-design'); };
+        } else if (button.textContent === 'Start Branding') {
+            button.onclick = function() { redirectToWhatsApp('branding'); };
+        } else if (button.textContent === 'Start Development') {
+            button.onclick = function() { redirectToWhatsApp('development'); };
+        }
     });
     
     // Animate service cards
