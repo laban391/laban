@@ -2,6 +2,9 @@
 let userAccounts = JSON.parse(localStorage.getItem('userAccounts')) || [];
 let selectedPlan = null;
 
+// API Configuration
+const API_BASE_URL = 'https://payment-mpesa.onrender.com';
+
 // DOM Elements
 const gateway = document.getElementById('gateway');
 const mainWebsite = document.getElementById('mainWebsite');
@@ -16,22 +19,12 @@ const navMenu = document.querySelector('.nav-menu');
 // Payment Configuration
 const PAYMENT_CONFIG = {
     stripe: {
-        publishableKey: 'pk_test_your_stripe_publishable_key_here', // Replace with your Stripe key
+        publishableKey: 'pk_test_your_stripe_publishable_key_here',
         plans: {
-            basic: { price: 9900, name: 'Basic Plan' }, // $99.00 in cents
-            professional: { price: 29900, name: 'Professional Plan' }, // $299.00 in cents
-            enterprise: { price: 59900, name: 'Enterprise Plan' } // $599.00 in cents
+            basic: { price: 9900, name: 'Basic Plan' },
+            professional: { price: 29900, name: 'Professional Plan' },
+            enterprise: { price: 59900, name: 'Enterprise Plan' }
         }
-    },
-    paypal: {
-        clientId: 'ARSawPQyi2MyGHAfI-0F_mxfFcRbElXSVkEivZhkd9MzTmsxYX1_7K_PF5vrWgY5mBB_AZYbMzUPxdIQ', // Replace with your PayPal Client ID
-        currency: 'USD'
-    },
-    mpesa: {
-        businessShortCode: '174379', // Sandbox shortcode
-        passkey: 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919', // Sandbox passkey
-        consumerKey: 'N01URGhqalXORYLphqVdwFKhLRwZ2B3P3bSBr65eeLmJwCn4c7o', // From your credentials
-        consumerSecret: '6ICXUIrP2Ynu6U3M8Ks6O98gqNQAX4pCf9Ygw5zsB9lHDjply6AvqN6wEUALOayp' // From your credentials
     }
 };
 
@@ -337,7 +330,252 @@ function scrollToPricing() {
     }
 }
 
-// ========== REAL PAYMENT IMPLEMENTATIONS ==========
+// ========== REAL M-PESA INTEGRATION ==========
+async function processMpesaPayment() {
+    if (!selectedPlan) {
+        alert('Please select a plan first.');
+        return;
+    }
+
+    const phone = prompt('Please enter your M-Pesa phone number (e.g., 254712345678):');
+    if (!phone) return;
+
+    // Validate phone number
+    if (!phone.startsWith('254') || phone.length !== 12) {
+        alert('Please enter a valid Kenyan phone number starting with 254 (e.g., 254712345678)');
+        return;
+    }
+
+    try {
+        const mpesaBtn = document.querySelector('.mpesa-btn');
+        const originalText = mpesaBtn.textContent;
+        mpesaBtn.textContent = 'Connecting to M-Pesa...';
+        mpesaBtn.disabled = true;
+
+        const amount = 1; // 1 KES for testing
+
+        console.log('🔄 Calling backend:', `${API_BASE_URL}/api/mpesa/stkpush`);
+
+        // Call our Render backend
+        const response = await fetch(`${API_BASE_URL}/api/mpesa/stkpush`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                phone: phone,
+                amount: amount,
+                plan: selectedPlan
+            })
+        });
+
+        const result = await response.json();
+        console.log('✅ Backend response:', result);
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to connect to payment service');
+        }
+
+        if (result.success) {
+            mpesaBtn.textContent = 'STK Push sent!';
+            
+            alert(`✅ M-Pesa STK Push Sent!\n\nCheck your phone: ${phone}\nAmount: KES ${amount}\n\nEnter your M-Pesa PIN: 174379`);
+
+            // Store checkout ID for status checking
+            const checkoutRequestID = result.data.CheckoutRequestID;
+            
+            // Start checking payment status
+            checkMpesaPaymentStatus(checkoutRequestID, phone);
+
+        } else {
+            throw new Error(result.error || 'Payment initiation failed');
+        }
+
+    } catch (error) {
+        console.error('❌ M-Pesa payment error:', error);
+        alert(`Payment failed: ${error.message}\n\nPlease try again or use another payment method.`);
+        resetMpesaButton();
+    }
+}
+
+// Check M-Pesa Payment Status
+async function checkMpesaPaymentStatus(checkoutRequestID, phone) {
+    const maxAttempts = 8;
+    let attempts = 0;
+
+    const checkStatus = async () => {
+        attempts++;
+        console.log(`🔍 Checking payment status (attempt ${attempts})...`);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/mpesa/check-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    checkoutRequestID: checkoutRequestID
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success && result.data.ResultCode === '0') {
+                // Payment successful!
+                const plan = PAYMENT_CONFIG.stripe.plans[selectedPlan];
+                
+                alert(`🎉 Payment Confirmed!\n\nPlan: ${plan.name}\nAmount: KES 1\nPhone: ${phone}\n\nThank you for your purchase!`);
+                
+                recordPurchase(selectedPlan, 'mpesa', plan.price, phone);
+                closePaymentModal();
+                resetMpesaButton();
+                return true;
+
+            } else if (result.success && (result.data.ResultCode === '1032' || result.data.ResultCode === '1')) {
+                // Still processing
+                if (attempts < maxAttempts) {
+                    setTimeout(checkStatus, 4000); // Check again in 4 seconds
+                } else {
+                    alert('⏰ Payment not completed. The request has timed out. Please try again.');
+                    resetMpesaButton();
+                }
+            } else {
+                // Payment failed
+                alert(`❌ Payment failed: ${result.data.ResultDesc}`);
+                resetMpesaButton();
+            }
+
+        } catch (error) {
+            console.error('Status check error:', error);
+            if (attempts < maxAttempts) {
+                setTimeout(checkStatus, 4000);
+            } else {
+                alert('⚠️ Unable to confirm payment status. Please check your M-Pesa messages.');
+                resetMpesaButton();
+            }
+        }
+    };
+
+    // Start checking after a delay
+    setTimeout(checkStatus, 5000);
+}
+
+// Stripe Payment Integration
+async function processStripePayment() {
+    if (!selectedPlan) {
+        alert('Please select a plan first.');
+        return;
+    }
+
+    try {
+        const stripeBtn = document.querySelector('.stripe-btn');
+        const originalText = stripeBtn.textContent;
+        stripeBtn.textContent = 'Processing...';
+        stripeBtn.disabled = true;
+
+        const plan = PAYMENT_CONFIG.stripe.plans[selectedPlan];
+        
+        // Simulate API call
+        setTimeout(() => {
+            stripeBtn.textContent = originalText;
+            stripeBtn.disabled = false;
+            
+            alert(`✅ Payment Successful!\n\nPlan: ${plan.name}\nAmount: $${(plan.price / 100).toFixed(2)}\n\nThank you for your purchase!`);
+            closePaymentModal();
+            
+            recordPurchase(selectedPlan, 'stripe', plan.price);
+            
+        }, 2000);
+
+    } catch (error) {
+        console.error('Stripe payment error:', error);
+        alert('Payment failed. Please try again.');
+        
+        const stripeBtn = document.querySelector('.stripe-btn');
+        stripeBtn.textContent = '💳 Pay with Credit/Debit Card';
+        stripeBtn.disabled = false;
+    }
+}
+
+// PayPal Payment Integration
+function processPayPalPayment() {
+    if (!selectedPlan) {
+        alert('Please select a plan first.');
+        return;
+    }
+
+    const plan = PAYMENT_CONFIG.stripe.plans[selectedPlan];
+    const amount = (plan.price / 100).toFixed(2);
+    
+    const paypalBtn = document.querySelector('.paypal-btn');
+    const originalText = paypalBtn.textContent;
+    paypalBtn.textContent = 'Redirecting to PayPal...';
+    paypalBtn.disabled = true;
+
+    setTimeout(() => {
+        paypalBtn.textContent = originalText;
+        paypalBtn.disabled = false;
+        
+        alert(`✅ PayPal Payment Successful!\n\nPlan: ${plan.name}\nAmount: $${amount}\n\nThank you for your purchase!`);
+        closePaymentModal();
+        
+        recordPurchase(selectedPlan, 'paypal', plan.price);
+        
+    }, 2000);
+}
+
+// Bank Transfer
+function showBankDetails() {
+    const bankDetails = document.getElementById('bank-details');
+    if (bankDetails) {
+        bankDetails.classList.remove('hidden');
+        
+        const plan = PAYMENT_CONFIG.stripe.plans[selectedPlan];
+        if (plan) {
+            const amount = (plan.price / 100).toFixed(2);
+            document.getElementById('bank-reference').textContent = `DC-${selectedPlan.toUpperCase()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+        }
+    }
+}
+
+function closePaymentModal() {
+    const paymentModal = document.getElementById('payment-modal');
+    const bankDetails = document.getElementById('bank-details');
+    
+    if (paymentModal) paymentModal.classList.add('hidden');
+    if (bankDetails) bankDetails.classList.add('hidden');
+    
+    document.body.style.overflow = 'auto';
+}
+
+function resetMpesaButton() {
+    const mpesaBtn = document.querySelector('.mpesa-btn');
+    if (mpesaBtn) {
+        mpesaBtn.textContent = '📱 Pay with M-Pesa';
+        mpesaBtn.disabled = false;
+    }
+}
+
+// Record purchase
+function recordPurchase(plan, method, amount, phone = null) {
+    const purchase = {
+        id: Date.now().toString(),
+        plan: plan,
+        method: method,
+        amount: amount,
+        phone: phone,
+        timestamp: new Date().toISOString(),
+        status: 'completed'
+    };
+    
+    let purchases = JSON.parse(localStorage.getItem('purchases')) || [];
+    purchases.push(purchase);
+    localStorage.setItem('purchases', JSON.stringify(purchases));
+    
+    console.log('Purchase recorded:', purchase);
+}
+
+// Plan Selection
 function selectPlan(planType) {
     selectedPlan = planType;
     const planNames = {
@@ -364,324 +602,6 @@ function selectPlan(planType) {
         paymentModal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
-}
-
-function closePaymentModal() {
-    const paymentModal = document.getElementById('payment-modal');
-    const bankDetails = document.getElementById('bank-details');
-    
-    if (paymentModal) paymentModal.classList.add('hidden');
-    if (bankDetails) bankDetails.classList.add('hidden');
-    
-    document.body.style.overflow = 'auto';
-}
-
-// Stripe Payment Integration
-async function processStripePayment() {
-    if (!selectedPlan) {
-        alert('Please select a plan first.');
-        return;
-    }
-
-    try {
-        // Show loading state
-        const stripeBtn = document.querySelector('.stripe-btn');
-        const originalText = stripeBtn.textContent;
-        stripeBtn.textContent = 'Processing...';
-        stripeBtn.disabled = true;
-
-        // In a real implementation, you would:
-        // 1. Create a payment intent on your server
-        // 2. Redirect to Stripe Checkout
-        // 3. Handle the payment confirmation
-
-        // For demo purposes, we'll simulate the process
-        const plan = PAYMENT_CONFIG.stripe.plans[selectedPlan];
-        
-        // Simulate API call to create payment intent
-        setTimeout(() => {
-            // This would be your actual Stripe Checkout redirect
-            // window.location.href = `your-server-url/create-checkout-session?plan=${selectedPlan}`;
-            
-            // For demo, show success message
-            stripeBtn.textContent = originalText;
-            stripeBtn.disabled = false;
-            
-            alert(`✅ Payment Successful!\n\nPlan: ${plan.name}\nAmount: $${(plan.price / 100).toFixed(2)}\n\nThank you for your purchase!`);
-            closePaymentModal();
-            
-            // Record the purchase
-            recordPurchase(selectedPlan, 'stripe', plan.price);
-            
-        }, 2000);
-
-    } catch (error) {
-        console.error('Stripe payment error:', error);
-        alert('Payment failed. Please try again.');
-        
-        // Reset button
-        const stripeBtn = document.querySelector('.stripe-btn');
-        stripeBtn.textContent = '💳 Pay with Credit/Debit Card';
-        stripeBtn.disabled = false;
-    }
-}
-
-// PayPal Payment Integration
-function processPayPalPayment() {
-    if (!selectedPlan) {
-        alert('Please select a plan first.');
-        return;
-    }
-
-    const plan = PAYMENT_CONFIG.stripe.plans[selectedPlan];
-    const amount = (plan.price / 100).toFixed(2);
-    
-    // Show loading state
-    const paypalBtn = document.querySelector('.paypal-btn');
-    const originalText = paypalBtn.textContent;
-    paypalBtn.textContent = 'Redirecting to PayPal...';
-    paypalBtn.disabled = true;
-
-    // In a real implementation, you would:
-    // 1. Create a PayPal order
-    // 2. Redirect to PayPal approval flow
-    // 3. Capture the payment on return
-    
-    // For demo, simulate the process
-    setTimeout(() => {
-        // Simulate successful PayPal payment
-        paypalBtn.textContent = originalText;
-        paypalBtn.disabled = false;
-        
-        alert(`✅ PayPal Payment Successful!\n\nPlan: ${plan.name}\nAmount: $${amount}\n\nThank you for your purchase!`);
-        closePaymentModal();
-        
-        // Record the purchase
-        recordPurchase(selectedPlan, 'paypal', plan.price);
-        
-    }, 2000);
-}
-
-// M-Pesa Payment Integration with Real API
-async function processMpesaPayment() {
-    if (!selectedPlan) {
-        alert('Please select a plan first.');
-        return;
-    }
-    
-    const phone = prompt('Please enter your M-Pesa phone number (e.g., 254712345678):');
-    if (!phone) return;
-    
-    // Validate phone number
-    if (!phone.startsWith('254') || phone.length !== 12) {
-        alert('Please enter a valid Kenyan phone number starting with 254 (e.g., 254712345678)');
-        return;
-    }
-    
-    try {
-        const mpesaBtn = document.querySelector('.mpesa-btn');
-        const originalText = mpesaBtn.textContent;
-        mpesaBtn.textContent = 'Getting access token...';
-        mpesaBtn.disabled = true;
-        
-        const plan = PAYMENT_CONFIG.stripe.plans[selectedPlan];
-        const amount = 1; // 1 KES for testing, change to plan.price for real payments
-        
-        // Step 1: Get access token
-        const tokenResponse = await getMpesaAccessToken();
-        if (!tokenResponse.access_token) {
-            throw new Error('Failed to get access token');
-        }
-        
-        mpesaBtn.textContent = 'Initiating payment...';
-        
-        // Step 2: Initiate STK Push
-        const stkResponse = await initiateSTKPush(
-            tokenResponse.access_token,
-            phone,
-            amount,
-            selectedPlan
-        );
-        
-        if (stkResponse.ResponseCode === '0') {
-            mpesaBtn.textContent = 'Payment initiated!';
-            
-            alert(`✅ M-Pesa Payment Initiated!\n\nSTK Push sent to ${phone}\nPlan: ${plan.name}\nAmount: KES ${amount}\n\nPlease check your phone to complete the payment.`);
-            
-            // Start polling for payment confirmation
-            checkPaymentStatus(stkResponse.CheckoutRequestID, tokenResponse.access_token, phone);
-            
-        } else {
-            throw new Error(stkResponse.ResponseDescription || 'Failed to initiate payment');
-        }
-        
-    } catch (error) {
-        console.error('M-Pesa payment error:', error);
-        alert(`M-Pesa payment failed: ${error.message}`);
-        
-        const mpesaBtn = document.querySelector('.mpesa-btn');
-        mpesaBtn.textContent = '📱 Pay with M-Pesa';
-        mpesaBtn.disabled = false;
-    }
-}
-
-// Get M-Pesa Access Token
-async function getMpesaAccessToken() {
-    const headers = new Headers();
-    headers.append("Authorization", "Basic N01VR2hxalhPcnlMcGhxVmR3RktoTFJ3WjJCM1AzYlNCcjY1ZWVMbUp3Q240YzdvOjZJQ1hVSXJQMlludTZVM004S3M2Tzk4Z3FOUUFYNHBDZjlZZ3c1enNCOWxIRGpwbHk2QXZxTjZ3RVVBTE9heXA=");
-    
-    const response = await fetch("https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials", {
-        method: 'GET',
-        headers: headers
-    });
-    
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    return await response.json();
-}
-
-// Initiate STK Push
-async function initiateSTKPush(accessToken, phoneNumber, amount, planType) {
-    const timestamp = new Date().toISOString().replace(/[-:.]/g, '').slice(0, 14);
-    const password = Buffer.from(`174379bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919${timestamp}`).toString('base64');
-    
-    const stkData = {
-        BusinessShortCode: "174379",
-        Password: password,
-        Timestamp: timestamp,
-        TransactionType: "CustomerPayBillOnline",
-        Amount: amount,
-        PartyA: phoneNumber,
-        PartyB: "174379",
-        PhoneNumber: phoneNumber,
-        CallBackURL: "https://your-domain.com/mpesa-callback", // Replace with your callback URL
-        AccountReference: `DC${planType.toUpperCase()}`,
-        TransactionDesc: `Payment for ${planType} plan`
-    };
-    
-    const response = await fetch("https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest", {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(stkData)
-    });
-    
-    if (!response.ok) {
-        throw new Error(`STK Push failed: ${response.status}`);
-    }
-    
-    return await response.json();
-}
-
-// Check Payment Status
-async function checkPaymentStatus(checkoutRequestID, accessToken, phone) {
-    const maxAttempts = 10;
-    let attempts = 0;
-    
-    const checkStatus = async () => {
-        attempts++;
-        
-        try {
-            const timestamp = new Date().toISOString().replace(/[-:.]/g, '').slice(0, 14);
-            const password = Buffer.from(`174379bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919${timestamp}`).toString('base64');
-            
-            const response = await fetch("https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query", {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    BusinessShortCode: "174379",
-                    Password: password,
-                    Timestamp: timestamp,
-                    CheckoutRequestID: checkoutRequestID
-                })
-            });
-            
-            const result = await response.json();
-            
-            if (result.ResultCode === '0') {
-                // Payment successful
-                alert('✅ M-Pesa Payment Confirmed! Thank you for your purchase.');
-                closePaymentModal();
-                
-                // Record the purchase
-                const plan = PAYMENT_CONFIG.stripe.plans[selectedPlan];
-                recordPurchase(selectedPlan, 'mpesa', plan.price, phone);
-                
-                resetMpesaButton();
-                return true;
-            } else if (result.ResultCode === '1032') {
-                // User cancelled
-                if (attempts < maxAttempts) {
-                    setTimeout(checkStatus, 3000); // Check again in 3 seconds
-                } else {
-                    alert('Payment was cancelled or timed out.');
-                    resetMpesaButton();
-                }
-            } else {
-                // Other error
-                alert(`Payment failed: ${result.ResultDesc}`);
-                resetMpesaButton();
-            }
-        } catch (error) {
-            console.error('Error checking payment status:', error);
-            if (attempts < maxAttempts) {
-                setTimeout(checkStatus, 3000);
-            } else {
-                alert('Unable to confirm payment status. Please contact support.');
-                resetMpesaButton();
-            }
-        }
-    };
-    
-    // Start checking status
-    setTimeout(checkStatus, 5000); // First check after 5 seconds
-}
-
-function resetMpesaButton() {
-    const mpesaBtn = document.querySelector('.mpesa-btn');
-    mpesaBtn.textContent = '📱 Pay with M-Pesa';
-    mpesaBtn.disabled = false;
-}
-// Bank Transfer
-function showBankDetails() {
-    const bankDetails = document.getElementById('bank-details');
-    if (bankDetails) {
-        bankDetails.classList.remove('hidden');
-        
-        // Update bank details based on selected plan
-        const plan = PAYMENT_CONFIG.stripe.plans[selectedPlan];
-        if (plan) {
-            const amount = (plan.price / 100).toFixed(2);
-            document.getElementById('bank-reference').textContent = `DC-${selectedPlan.toUpperCase()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-        }
-    }
-}
-
-// Record purchase (for demo purposes)
-function recordPurchase(plan, method, amount, phone = null) {
-    const purchase = {
-        id: Date.now().toString(),
-        plan: plan,
-        method: method,
-        amount: amount,
-        phone: phone,
-        timestamp: new Date().toISOString(),
-        status: 'completed'
-    };
-    
-    // Store in localStorage (in real app, send to your backend)
-    let purchases = JSON.parse(localStorage.getItem('purchases')) || [];
-    purchases.push(purchase);
-    localStorage.setItem('purchases', JSON.stringify(purchases));
-    
-    console.log('Purchase recorded:', purchase);
 }
 
 // Event Listeners
@@ -819,7 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Global close functions for HTML onclick
+// Global functions for HTML onclick
 window.closePaymentModal = closePaymentModal;
 window.closeServicePage = closeServicePage;
 window.selectPlan = selectPlan;
