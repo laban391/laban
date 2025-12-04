@@ -43,7 +43,7 @@
 
         .container {
             width: 100%;
-            max-width: 900px;
+            max-width: 1000px;
             background-color: white;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
@@ -73,59 +73,58 @@
         }
 
         .header h1 {
-            font-size: 2.8rem;
+            font-size: 2.5rem;
             margin-bottom: 10px;
             position: relative;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .header p {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             opacity: 0.95;
             position: relative;
         }
 
         .header-icon {
-            font-size: 3rem;
+            font-size: 2.8rem;
             margin-bottom: 20px;
             display: block;
             color: var(--success);
         }
 
         .form-container {
-            padding: 40px;
+            padding: 30px;
         }
 
         .form-group {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             position: relative;
         }
 
         .form-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 25px;
+            gap: 20px;
             margin-bottom: 10px;
         }
 
         .form-row .form-group {
             flex: 1;
-            min-width: 300px;
+            min-width: 280px;
         }
 
         label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-weight: 600;
             color: var(--dark);
-            font-size: 1.1rem;
+            font-size: 1rem;
             position: relative;
         }
 
         .required-star {
             color: var(--danger);
-            margin-left: 5px;
-            font-size: 1.2rem;
+            margin-left: 3px;
         }
 
         .input-container {
@@ -136,18 +135,18 @@
 
         .input-icon {
             position: absolute;
-            left: 15px;
+            left: 12px;
             color: var(--primary);
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             z-index: 2;
         }
 
         input {
             width: 100%;
-            padding: 17px 17px 17px 55px;
+            padding: 15px 15px 15px 45px;
             border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1.05rem;
+            border-radius: 8px;
+            font-size: 1rem;
             transition: all 0.3s ease;
             background-color: #f8f9fa;
             color: var(--dark);
@@ -155,49 +154,49 @@
 
         input:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
             outline: none;
             background-color: white;
         }
 
         .hint-text {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #666;
-            margin-top: 8px;
+            margin-top: 5px;
             font-style: italic;
         }
 
         .action-buttons {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            margin-top: 50px;
+            gap: 15px;
+            margin-top: 40px;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 18px 40px;
+            padding: 15px 25px;
             border: none;
-            border-radius: 10px;
-            font-size: 1.2rem;
+            border-radius: 8px;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            min-width: 220px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            gap: 10px;
+            min-width: 180px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
         .btn:active {
-            transform: translateY(-2px);
+            transform: translateY(-1px);
         }
 
         .submit-btn {
@@ -218,6 +217,15 @@
             background: linear-gradient(135deg, #e01b71, #9c1485);
         }
 
+        .bulk-btn {
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+            color: white;
+        }
+
+        .bulk-btn:hover {
+            background: linear-gradient(135deg, #009688, #8bc34a);
+        }
+
         .reset-btn {
             background: linear-gradient(135deg, #4cc9f0, #4895ef);
             color: white;
@@ -229,10 +237,10 @@
 
         .form-status {
             text-align: center;
-            margin-top: 30px;
-            padding: 20px;
-            border-radius: 10px;
-            font-size: 1.1rem;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1rem;
             font-weight: 500;
             display: none;
         }
@@ -240,20 +248,20 @@
         .success-status {
             background-color: rgba(76, 175, 80, 0.15);
             color: #2e7d32;
-            border-left: 5px solid #4CAF50;
+            border-left: 4px solid #4CAF50;
         }
 
         .error-status {
             background-color: rgba(230, 57, 70, 0.15);
             color: #c62828;
-            border-left: 5px solid var(--danger);
+            border-left: 4px solid var(--danger);
         }
 
         .footer {
             text-align: center;
-            padding: 25px;
+            padding: 20px;
             color: #666;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             border-top: 1px solid #eee;
             background-color: #f8f9fa;
             width: 100%;
@@ -263,22 +271,161 @@
             display: inline-block;
             background: var(--gradient-primary);
             color: white;
-            padding: 8px 20px;
+            padding: 6px 15px;
             border-radius: 50px;
             font-weight: 600;
             margin-top: 10px;
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
         }
 
         .password-toggle {
             position: absolute;
-            right: 15px;
+            right: 12px;
             background: none;
             border: none;
             color: var(--primary);
             cursor: pointer;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             z-index: 3;
+        }
+
+        .form-instructions {
+            background: linear-gradient(135deg, #fff8e1, #ffecb3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid var(--warning);
+        }
+
+        .instructions-title {
+            color: var(--dark);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+        }
+
+        .instructions-list {
+            padding-left: 20px;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .instructions-list li {
+            margin-bottom: 5px;
+        }
+
+        .privacy-notice {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 25px;
+            border-left: 4px solid #2196f3;
+            font-size: 0.85rem;
+        }
+
+        .privacy-notice h4 {
+            color: #1976d2;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+        
+        .input-error {
+            border-color: var(--danger) !important;
+            background-color: rgba(230, 57, 70, 0.05) !important;
+        }
+        
+        .input-success {
+            border-color: #4CAF50 !important;
+            background-color: rgba(76, 175, 80, 0.05) !important;
+        }
+        
+        .view-data-btn {
+            margin-top: 15px;
+            background: linear-gradient(135deg, #8e2de2, #4a00e0);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .view-data-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(142, 45, 226, 0.3);
+        }
+        
+        .submissions-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .submissions-title {
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .submissions-list {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+        
+        .submission-item {
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .submission-info {
+            flex: 1;
+        }
+        
+        .submission-name {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .submission-course {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .delete-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .delete-btn:hover {
+            background: #c62828;
         }
 
         @media (max-width: 768px) {
@@ -301,48 +448,12 @@
             }
             
             .header h1 {
-                font-size: 2.2rem;
+                font-size: 2rem;
             }
             
             .form-container {
-                padding: 25px;
+                padding: 20px;
             }
-        }
-
-        .form-instructions {
-            background: linear-gradient(135deg, #fff8e1, #ffecb3);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            border-left: 5px solid var(--warning);
-        }
-
-        .instructions-title {
-            color: var(--dark);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .instructions-list {
-            padding-left: 20px;
-            color: #555;
-        }
-
-        .instructions-list li {
-            margin-bottom: 8px;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-        
-        .btn:disabled:hover {
-            transform: none !important;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
         }
     </style>
 </head>
@@ -351,19 +462,18 @@
         <div class="header">
             <i class="fas fa-graduation-cap header-icon"></i>
             <h1>STUDENT REGISTRATION SYSTEM</h1>
-            <p>Accurate, Simple, and Professional Registration Form</p>
+            <p>Individual & Bulk Download Options</p>
         </div>
         
         <div class="form-container">
             <div class="form-instructions">
-                <h3 class="instructions-title"><i class="fas fa-info-circle"></i> Important Instructions</h3>
+                <h3 class="instructions-title"><i class="fas fa-info-circle"></i> Instructions</h3>
                 <ul class="instructions-list">
                     <li>Fill ALL fields marked with <span class="required-star">*</span></li>
-                    <li>Course field is <strong>MANUAL INPUT</strong> - type your exact course name</li>
-                    <li>Use valid email format (e.g., student@school.edu)</li>
-                    <li>Password must be at least 8 characters</li>
-                    <li>Phone numbers should include country code</li>
-                    <li>Click <strong>SUBMIT</strong> first, then <strong>DOWNLOAD</strong></li>
+                    <li><strong>Course field is MANUAL INPUT</strong> - type your exact course</li>
+                    <li><strong>SUBMIT</strong> - Saves student registration</li>
+                    <li><strong>DOWNLOAD</strong> - Get current form as Word</li>
+                    <li><strong>BULK DOWNLOAD</strong> - Download ALL submitted forms as ZIP</li>
                 </ul>
             </div>
             
@@ -374,18 +484,15 @@
                         <label for="username">Username <span class="required-star">*</span></label>
                         <div class="input-container">
                             <i class="fas fa-user input-icon"></i>
-                            <input type="text" id="username" name="username" required 
-                                   placeholder="Enter unique username">
+                            <input type="text" id="username" name="username" required placeholder="Enter username">
                         </div>
-                        <div class="hint-text">3-20 characters</div>
                     </div>
                     
                     <div class="form-group">
                         <label for="firstName">First Name <span class="required-star">*</span></label>
                         <div class="input-container">
                             <i class="fas fa-id-card input-icon"></i>
-                            <input type="text" id="firstName" name="firstName" required 
-                                   placeholder="Enter your first name">
+                            <input type="text" id="firstName" name="firstName" required placeholder="Enter first name">
                         </div>
                     </div>
                 </div>
@@ -396,8 +503,7 @@
                         <label for="lastName">Last Name <span class="required-star">*</span></label>
                         <div class="input-container">
                             <i class="fas fa-id-card input-icon"></i>
-                            <input type="text" id="lastName" name="lastName" required 
-                                   placeholder="Enter your last name">
+                            <input type="text" id="lastName" name="lastName" required placeholder="Enter last name">
                         </div>
                     </div>
                     
@@ -405,8 +511,7 @@
                         <label for="institution">Institution <span class="required-star">*</span></label>
                         <div class="input-container">
                             <i class="fas fa-university input-icon"></i>
-                            <input type="text" id="institution" name="institution" required 
-                                   placeholder="Enter your school/university name">
+                            <input type="text" id="institution" name="institution" required placeholder="School/University">
                         </div>
                     </div>
                 </div>
@@ -417,8 +522,7 @@
                         <label for="course">Course <span class="required-star">*</span></label>
                         <div class="input-container">
                             <i class="fas fa-book-open input-icon"></i>
-                            <input type="text" id="course" name="course" required 
-                                   placeholder="Type your course name (e.g., Computer Science)">
+                            <input type="text" id="course" name="course" required placeholder="Type course name">
                         </div>
                         <div class="hint-text">Type exactly as required by your institution</div>
                     </div>
@@ -427,8 +531,7 @@
                         <label for="email">Email Address <span class="required-star">*</span></label>
                         <div class="input-container">
                             <i class="fas fa-envelope input-icon"></i>
-                            <input type="email" id="email" name="email" required 
-                                   placeholder="student@institution.edu">
+                            <input type="email" id="email" name="email" required placeholder="student@institution.edu">
                         </div>
                     </div>
                 </div>
@@ -439,21 +542,18 @@
                         <label for="password">Password <span class="required-star">*</span></label>
                         <div class="input-container">
                             <i class="fas fa-lock input-icon"></i>
-                            <input type="password" id="password" name="password" required 
-                                   placeholder="Create a password" minlength="8">
+                            <input type="password" id="password" name="password" required placeholder="Create password">
                             <button type="button" class="password-toggle" id="togglePassword">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
-                        <div class="hint-text">Minimum 8 characters</div>
                     </div>
                     
                     <div class="form-group">
                         <label for="phone1">Primary Phone <span class="required-star">*</span></label>
                         <div class="input-container">
                             <i class="fas fa-phone input-icon"></i>
-                            <input type="tel" id="phone1" name="phone1" required 
-                                   placeholder="+254700123456">
+                            <input type="tel" id="phone1" name="phone1" required placeholder="+254700123456">
                         </div>
                     </div>
                 </div>
@@ -464,8 +564,7 @@
                         <label for="phone2">Secondary Phone (Optional)</label>
                         <div class="input-container">
                             <i class="fas fa-phone-alt input-icon"></i>
-                            <input type="tel" id="phone2" name="phone2" 
-                                   placeholder="+254711987654 (Optional)">
+                            <input type="tel" id="phone2" name="phone2" placeholder="+254711987654">
                         </div>
                     </div>
                 </div>
@@ -473,68 +572,126 @@
                 <!-- Form Status Messages -->
                 <div class="form-status" id="formStatus"></div>
                 
-                <!-- Action Buttons -->
+                <!-- Main Action Buttons -->
                 <div class="action-buttons">
                     <button type="submit" class="btn submit-btn" id="submitBtn">
-                        <i class="fas fa-check-circle"></i> SUBMIT FORM
+                        <i class="fas fa-check-circle"></i> SUBMIT
                     </button>
                     <button type="button" class="btn download-btn" id="downloadBtn">
-                        <i class="fas fa-file-word"></i> DOWNLOAD AS WORD
+                        <i class="fas fa-file-word"></i> DOWNLOAD THIS
                     </button>
-                    <button type="button" class="btn reset-btn" id="resetBtn">
-                        <i class="fas fa-redo"></i> CLEAR FORM
+                    <button type="button" class="btn bulk-btn" id="bulkDownloadBtn">
+                        <i class="fas fa-file-archive"></i> BULK DOWNLOAD
+                    </button>
+                    <button type="reset" class="btn reset-btn" id="resetBtn">
+                        <i class="fas fa-redo"></i> CLEAR
                     </button>
                 </div>
             </form>
+            
+            <!-- Submissions Section -->
+            <div class="submissions-section">
+                <h3 class="submissions-title"><i class="fas fa-list-alt"></i> Submitted Registrations</h3>
+                <div class="submissions-list" id="submissionsList">
+                    <!-- Submissions will appear here -->
+                </div>
+                <button type="button" class="view-data-btn" id="viewSubmissionsBtn">
+                    <i class="fas fa-sync"></i> Refresh Submissions List
+                </button>
+            </div>
+            
+            <div class="privacy-notice">
+                <h4><i class="fas fa-shield-alt"></i> Privacy Protection</h4>
+                <p>✅ All data stored locally on your device only<br>
+                ✅ Bulk download creates ZIP with all submitted forms<br>
+                ✅ No data sent to any server - 100% private</p>
+            </div>
         </div>
         
         <div class="footer">
-            <p>© 2023 Student Registration System | Deployed on Vercel</p>
+            <p>© 2024 Student Registration System | All data stays on your device</p>
             <div class="student-counter">
                 <i class="fas fa-users"></i> 
                 <span id="studentCount">0</span> Students Registered
             </div>
-            <p style="margin-top: 15px; font-size: 0.85rem; color: #777;">
-                <i class="fas fa-shield-alt"></i> Data is stored locally in your browser
-            </p>
         </div>
     </div>
 
     <script>
-        // Initialize variables
-        let formSubmitted = false;
-        let formData = {};
-        let studentCount = 0;
-        
-        // Get DOM elements
+        // Load JSZip library for ZIP creation
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        document.head.appendChild(script);
+
+        // DOM Elements
         const form = document.getElementById('studentForm');
         const submitBtn = document.getElementById('submitBtn');
         const downloadBtn = document.getElementById('downloadBtn');
+        const bulkDownloadBtn = document.getElementById('bulkDownloadBtn');
         const resetBtn = document.getElementById('resetBtn');
         const togglePassword = document.getElementById('togglePassword');
         const passwordField = document.getElementById('password');
         const formStatus = document.getElementById('formStatus');
-        const studentCountElement = document.getElementById('studentCount');
-        
-        // Load student count from localStorage
-        if (localStorage.getItem('studentCount')) {
-            studentCount = parseInt(localStorage.getItem('studentCount'));
-            studentCountElement.textContent = studentCount;
-        }
-        
+        const studentCount = document.getElementById('studentCount');
+        const submissionsList = document.getElementById('submissionsList');
+        const viewSubmissionsBtn = document.getElementById('viewSubmissionsBtn');
+
+        // Load student count
+        let registeredStudents = localStorage.getItem('registeredStudents') || 0;
+        studentCount.textContent = registeredStudents;
+
         // Toggle password visibility
         togglePassword.addEventListener('click', function() {
             const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordField.setAttribute('type', type);
             this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
         });
-        
-        // Form submission handler
+
+        // Form validation function
+        function validateForm() {
+            let isValid = true;
+            const requiredFields = ['username', 'firstName', 'lastName', 'institution', 'course', 'email', 'password', 'phone1'];
+            
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                const value = field.value.trim();
+                
+                if (!value) {
+                    field.classList.add('input-error');
+                    field.classList.remove('input-success');
+                    isValid = false;
+                } else {
+                    field.classList.remove('input-error');
+                    field.classList.add('input-success');
+                }
+                
+                // Special validation for email
+                if (fieldId === 'email' && value) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(value)) {
+                        field.classList.add('input-error');
+                        field.classList.remove('input-success');
+                        isValid = false;
+                    }
+                }
+            });
+            
+            return isValid;
+        }
+
+        // Form submit handler
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Get form values
-            formData = {
+            // Validate form
+            if (!validateForm()) {
+                showMessage('❌ Please fill all required fields correctly!', 'error');
+                return;
+            }
+            
+            // Get form data
+            const formData = {
+                id: Date.now(),
                 username: document.getElementById('username').value.trim(),
                 firstName: document.getElementById('firstName').value.trim(),
                 lastName: document.getElementById('lastName').value.trim(),
@@ -543,101 +700,270 @@
                 email: document.getElementById('email').value.trim(),
                 password: document.getElementById('password').value,
                 phone1: document.getElementById('phone1').value.trim(),
-                phone2: document.getElementById('phone2').value.trim()
+                phone2: document.getElementById('phone2').value.trim(),
+                timestamp: new Date().toISOString(),
+                registrationId: 'STU-' + Date.now().toString().slice(-6)
             };
             
-            // Check required fields
-            const requiredFields = ['username', 'firstName', 'lastName', 'institution', 'course', 'email', 'password', 'phone1'];
-            let isValid = true;
+            // Save to localStorage
+            const submissions = JSON.parse(localStorage.getItem('studentSubmissions') || '[]');
+            submissions.push(formData);
+            localStorage.setItem('studentSubmissions', JSON.stringify(submissions));
             
-            for (const field of requiredFields) {
-                if (!formData[field]) {
-                    isValid = false;
-                    document.getElementById(field).style.borderColor = 'var(--danger)';
-                } else {
-                    document.getElementById(field).style.borderColor = '#e0e0e0';
-                }
-            }
-            
-            if (!isValid) {
-                showMessage('Please fill in all required fields!', 'error');
-                return;
-            }
-            
-            // Mark form as submitted
-            formSubmitted = true;
-            
-            // Increment student count
-            studentCount++;
-            localStorage.setItem('studentCount', studentCount);
-            studentCountElement.textContent = studentCount;
-            
-            // Save form data to localStorage
-            const submissions = JSON.parse(localStorage.getItem('submissions') || '[]');
-            submissions.push({
-                ...formData,
-                timestamp: new Date().toISOString(),
-                id: Date.now()
-            });
-            localStorage.setItem('submissions', JSON.stringify(submissions));
+            // Update student count
+            registeredStudents++;
+            localStorage.setItem('registeredStudents', registeredStudents);
+            studentCount.textContent = registeredStudents;
             
             // Show success message
-            showMessage(`✅ Registration successful! ${formData.firstName} ${formData.lastName} is registered. Click "Download Word" to save.`, 'success');
+            showMessage(`✅ Registration successful! ${formData.firstName} ${formData.lastName} is now registered.`, 'success');
+            
+            // Refresh submissions list
+            displaySubmissions();
+            
+            // Clear form
+            form.reset();
+            document.querySelectorAll('input').forEach(input => {
+                input.classList.remove('input-error', 'input-success');
+            });
         });
-        
-        // Download Word document handler
-        downloadBtn.addEventListener('click', function() {
-            if (!formSubmitted) {
-                showMessage('Please submit the form first before downloading!', 'error');
+
+        // Display all submissions
+        function displaySubmissions() {
+            const submissions = JSON.parse(localStorage.getItem('studentSubmissions') || '[]');
+            submissionsList.innerHTML = '';
+            
+            if (submissions.length === 0) {
+                submissionsList.innerHTML = '<div class="submission-item"><em>No submissions yet. Submit a form to see it here.</em></div>';
                 return;
             }
             
-            if (Object.keys(formData).length === 0) {
-                showMessage('No form data available. Please submit the form first.', 'error');
-                return;
-            }
-            
-            // Generate Word document
-            const wordContent = generateWordDocument(formData);
-            
-            // Create and trigger download
-            const blob = new Blob(['\ufeff', wordContent], {
-                type: 'application/msword'
+            submissions.forEach(submission => {
+                const submissionItem = document.createElement('div');
+                submissionItem.className = 'submission-item';
+                submissionItem.innerHTML = `
+                    <div class="submission-info">
+                        <div class="submission-name">${submission.firstName} ${submission.lastName}</div>
+                        <div class="submission-course">${submission.course} | ${submission.institution}</div>
+                    </div>
+                    <button class="delete-btn" data-id="${submission.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                submissionsList.appendChild(submissionItem);
             });
             
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `Student_Registration_${formData.firstName}_${formData.lastName}.doc`;
+            // Add delete functionality
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    deleteSubmission(id);
+                });
+            });
+        }
+
+        // Delete a submission
+        function deleteSubmission(id) {
+            const submissions = JSON.parse(localStorage.getItem('studentSubmissions') || '[]');
+            const filtered = submissions.filter(sub => sub.id !== id);
+            localStorage.setItem('studentSubmissions', JSON.stringify(filtered));
             
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Update student count
+            registeredStudents = filtered.length;
+            localStorage.setItem('registeredStudents', registeredStudents);
+            studentCount.textContent = registeredStudents;
             
-            // Clean up
-            URL.revokeObjectURL(url);
-            
-            // Show download success message
-            showMessage(`📄 Word document downloaded successfully! File: Student_Registration_${formData.firstName}_${formData.lastName}.doc`, 'success');
-        });
-        
-        // Reset form handler
-        resetBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to clear all form data?')) {
-                form.reset();
-                formSubmitted = false;
-                formData = {};
+            displaySubmissions();
+            showMessage('✅ Submission deleted successfully!', 'success');
+        }
+
+        // Generate Word document for a single student
+        function generateWordDocument(formData) {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            const timeStr = now.toLocaleTimeString('en-US');
+
+            return `<!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Student Registration - ${formData.firstName} ${formData.lastName}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+                    h1 { color: #2c3e50; border-bottom: 3px solid #4361ee; padding-bottom: 10px; }
+                    h2 { color: #3a0ca3; margin-top: 30px; }
+                    .header { background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 30px; }
+                    .info-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    .info-table td { padding: 12px 15px; border: 1px solid #ddd; }
+                    .info-table tr:nth-child(even) { background-color: #f9f9f9; }
+                    .label { font-weight: bold; color: #2c3e50; width: 30%; background-color: #f0f2ff; }
+                    .footer { margin-top: 50px; padding-top: 20px; border-top: 2px solid #ddd; text-align: center; color: #666; }
+                    .timestamp { color: #e74c3c; font-weight: bold; }
+                    .watermark { 
+                        position: absolute; 
+                        bottom: 50%; 
+                        right: 50%; 
+                        transform: translate(50%, 50%) rotate(-45deg); 
+                        font-size: 80px; 
+                        color: rgba(67, 97, 238, 0.1); 
+                        z-index: -1; 
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="watermark">REGISTERED STUDENT</div>
                 
-                // Reset all field borders
-                const inputs = form.querySelectorAll('input');
-                inputs.forEach(input => {
-                    input.style.borderColor = '#e0e0e0';
+                <div class="header">
+                    <h1>STUDENT REGISTRATION FORM</h1>
+                    <p>Registration ID: <strong>${formData.registrationId}</strong></p>
+                    <p>Generated on: <span class="timestamp">${dateStr} at ${timeStr}</span></p>
+                </div>
+                
+                <h2>Student Information</h2>
+                <table class="info-table">
+                    <tr><td class="label">Username:</td><td>${formData.username}</td></tr>
+                    <tr><td class="label">Full Name:</td><td>${formData.firstName} ${formData.lastName}</td></tr>
+                    <tr><td class="label">Institution:</td><td>${formData.institution}</td></tr>
+                    <tr><td class="label">Course:</td><td>${formData.course}</td></tr>
+                    <tr><td class="label">Email Address:</td><td>${formData.email}</td></tr>
+                    <tr><td class="label">Password:</td><td>${formData.password}</td></tr>
+                    <tr><td class="label">Primary Phone:</td><td>${formData.phone1}</td></tr>
+                    <tr><td class="label">Secondary Phone:</td><td>${formData.phone2 || 'Not provided'}</td></tr>
+                </table>
+                
+                <div class="footer">
+                    <p>This document was generated by the Student Registration System</p>
+                    <p>© 2024 Student Registration System | All information provided by student</p>
+                </div>
+            </body>
+            </html>`;
+        }
+
+        // Download current form as Word
+        downloadBtn.addEventListener('click', function() {
+            // Get current form values
+            const formData = {
+                username: document.getElementById('username').value.trim() || 'Not provided',
+                firstName: document.getElementById('firstName').value.trim() || 'Not provided',
+                lastName: document.getElementById('lastName').value.trim() || 'Not provided',
+                institution: document.getElementById('institution').value.trim() || 'Not provided',
+                course: document.getElementById('course').value.trim() || 'Not provided',
+                email: document.getElementById('email').value.trim() || 'Not provided',
+                password: document.getElementById('password').value || 'Not provided',
+                phone1: document.getElementById('phone1').value.trim() || 'Not provided',
+                phone2: document.getElementById('phone2').value.trim() || 'Not provided',
+                registrationId: 'STU-' + Date.now().toString().slice(-6)
+            };
+
+            const wordContent = generateWordDocument(formData);
+            
+            // Create and download the file
+            try {
+                const blob = new Blob(['\ufeff', wordContent], { 
+                    type: 'application/msword' 
                 });
                 
-                showMessage('Form cleared. You can start a new registration.', 'success');
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                
+                const firstName = formData.firstName === 'Not provided' ? 'Student' : formData.firstName;
+                const lastName = formData.lastName === 'Not provided' ? 'Registration' : formData.lastName;
+                link.download = `Student_Registration_${firstName}_${lastName}.doc`;
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                showMessage(`✅ Current form downloaded as Word document!`, 'success');
+                
+            } catch (error) {
+                console.error('Download error:', error);
+                showMessage('❌ Error downloading document. Please try again.', 'error');
             }
         });
-        
+
+        // Bulk download all submitted forms as ZIP
+        bulkDownloadBtn.addEventListener('click', function() {
+            const submissions = JSON.parse(localStorage.getItem('studentSubmissions') || '[]');
+            
+            if (submissions.length === 0) {
+                showMessage('❌ No submitted forms found. Submit at least one form first.', 'error');
+                return;
+            }
+            
+            // Wait for JSZip to load
+            if (typeof JSZip === 'undefined') {
+                showMessage('⚠️ Please wait, loading ZIP library...', 'error');
+                setTimeout(() => this.click(), 1000);
+                return;
+            }
+            
+            showMessage('⏳ Creating ZIP file with all submissions...', 'success');
+            
+            const zip = new JSZip();
+            const folder = zip.folder("Student_Registrations");
+            
+            // Create a Word document for each submission
+            submissions.forEach((submission, index) => {
+                const wordContent = generateWordDocument(submission);
+                const filename = `${submission.registrationId}_${submission.firstName}_${submission.lastName}.doc`;
+                folder.file(filename, wordContent);
+            });
+            
+            // Add a summary file
+            const summaryContent = `STUDENT REGISTRATION SUMMARY
+            ===========================
+            Total Students: ${submissions.length}
+            Generated: ${new Date().toLocaleString()}
+            
+            Student List:
+            ${submissions.map((s, i) => `${i+1}. ${s.firstName} ${s.lastName} - ${s.course} - ${s.institution}`).join('\n')}
+            
+            © 2024 Student Registration System`;
+            folder.file("SUMMARY.txt", summaryContent);
+            
+            // Generate ZIP file
+            zip.generateAsync({type: "blob"})
+                .then(function(content) {
+                    // Download the ZIP file
+                    const url = URL.createObjectURL(content);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `All_Student_Registrations_${new Date().toISOString().split('T')[0]}.zip`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                    
+                    showMessage(`✅ ZIP file downloaded with ${submissions.length} student forms!`, 'success');
+                })
+                .catch(function(error) {
+                    console.error('ZIP creation error:', error);
+                    showMessage('❌ Error creating ZIP file. Please try again.', 'error');
+                });
+        });
+
+        // Reset form
+        resetBtn.addEventListener('click', function() {
+            if (confirm('Clear all form fields?')) {
+                form.reset();
+                document.querySelectorAll('input').forEach(input => {
+                    input.classList.remove('input-error', 'input-success');
+                });
+                showMessage('✅ Form cleared. Ready for new registration.', 'success');
+            }
+        });
+
+        // View submissions button
+        viewSubmissionsBtn.addEventListener('click', displaySubmissions);
+
         // Show message function
         function showMessage(message, type) {
             formStatus.textContent = message;
@@ -651,59 +977,29 @@
             
             formStatus.style.display = 'block';
             
-            // Auto-hide after 5 seconds
             setTimeout(() => {
                 formStatus.style.display = 'none';
-            }, 5000);
+            }, 3000);
         }
-        
-        // Generate Word document
-        function generateWordDocument(data) {
-            const now = new Date();
-            const dateStr = now.toLocaleDateString();
-            const timeStr = now.toLocaleTimeString();
-            
-            return `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Student Registration - ${data.firstName} ${data.lastName}</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        td { padding: 10px; border-bottom: 1px solid #ddd; }
-        .label { font-weight: bold; color: #2c3e50; width: 30%; background-color: #f5f5f5; }
-        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; }
-    </style>
-</head>
-<body>
-    <h1>STUDENT REGISTRATION FORM</h1>
-    <p>Generated on ${dateStr} at ${timeStr}</p>
-    
-    <table>
-        <tr><td class="label">Full Name:</td><td>${data.firstName} ${data.lastName}</td></tr>
-        <tr><td class="label">Username:</td><td>${data.username}</td></tr>
-        <tr><td class="label">Institution:</td><td>${data.institution}</td></tr>
-        <tr><td class="label">Course:</td><td>${data.course}</td></tr>
-        <tr><td class="label">Email:</td><td>${data.email}</td></tr>
-        <tr><td class="label">Password:</td><td>${data.password}</td></tr>
-        <tr><td class="label">Primary Phone:</td><td>${data.phone1}</td></tr>
-        <tr><td class="label">Secondary Phone:</td><td>${data.phone2 || 'Not provided'}</td></tr>
-    </table>
-    
-    <div class="footer">
-        <p>© 2023 Student Registration System | This document was generated automatically</p>
-        <p>For verification, contact your institution administration</p>
-    </div>
-</body>
-</html>`;
-        }
-        
+
+        // Real-time validation
+        document.querySelectorAll('input[required]').forEach(input => {
+            input.addEventListener('input', function() {
+                const value = this.value.trim();
+                if (value) {
+                    this.classList.remove('input-error');
+                    this.classList.add('input-success');
+                } else {
+                    this.classList.remove('input-success');
+                }
+            });
+        });
+
         // Show welcome message
         window.addEventListener('load', function() {
+            displaySubmissions();
             setTimeout(() => {
-                showMessage('Welcome! Fill all fields and click SUBMIT first, then DOWNLOAD.', 'success');
+                showMessage('📝 Submit forms → View all below → Use BULK DOWNLOAD for all forms!', 'success');
             }, 1000);
         });
     </script>
