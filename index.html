@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #f72585;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #e63946;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gradient-primary: linear-gradient(135deg, #4361ee, #3a0ca3);
+            --gradient-secondary: linear-gradient(135deg, #f72585, #b5179e);
+            --gradient-success: linear-gradient(135deg, #4cc9f0, #4895ef);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --radius: 15px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin: 20px auto;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.1;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            position: relative;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            position: relative;
+        }
+
+        .header-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+            color: var(--success);
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin-bottom: 10px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1.1rem;
+            position: relative;
+        }
+
+        .required-star {
+            color: var(--danger);
+            margin-left: 5px;
+            font-size: 1.2rem;
+        }
+
+        .input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            color: var(--primary);
+            font-size: 1.2rem;
+            z-index: 2;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 17px 17px 17px 55px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+            color: var(--dark);
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15);
+            outline: none;
+            background-color: white;
+        }
+
+        .valid-input {
+            border-color: #4CAF50;
+            background-color: rgba(76, 175, 80, 0.05);
+        }
+
+        .invalid-input {
+            border-color: var(--danger);
+            background-color: rgba(230, 57, 70, 0.05);
+        }
+
+        .validation-message {
+            font-size: 0.9rem;
+            margin-top: 8px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .valid-message {
+            color: #4CAF50;
+            background-color: rgba(76, 175, 80, 0.1);
+            display: block;
+        }
+
+        .invalid-message {
+            color: var(--danger);
+            background-color: rgba(230, 57, 70, 0.1);
+            display: block;
+        }
+
+        .hint-text {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 50px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 18px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            min-width: 220px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(-2px);
+        }
+
+        .submit-btn {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #3a56d4, #2f0b8a);
+        }
+
+        .download-btn {
+            background: var(--gradient-secondary);
+            color: white;
+        }
+
+        .download-btn:hover {
+            background: linear-gradient(135deg, #e01b71, #9c1485);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #4cc9f0, #4895ef);
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background: linear-gradient(135deg, #3ab4d9, #3a84d4);
+        }
+
+        .form-status {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .success-status {
+            background-color: rgba(76, 175, 80, 0.15);
+            color: #2e7d32;
+            border-left: 5px solid #4CAF50;
+            display: block;
+        }
+
+        .error-status {
+            background-color: rgba(230, 57, 70, 0.15);
+            color: #c62828;
+            border-left: 5px solid var(--danger);
+            display: block;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: #666;
+            font-size: 0.95rem;
+            border-top: 1px solid #eee;
+            background-color: #f8f9fa;
+            width: 100%;
+        }
+
+        .student-counter {
+            display: inline-block;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            z-index: 3;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .form-row .form-group {
+                min-width: 100%;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .form-container {
+                padding: 25px;
+            }
+        }
+
+        .form-instructions {
+            background: linear-gradient(135deg, #fff8e1, #ffecb3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--warning);
+        }
+
+        .instructions-title {
+            color: var(--dark);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instructions-list {
+            padding-left: 20px;
+            color: #555;
+        }
+
+        .instructions-list li {
+            margin-bottom: 8px;
+        }
+
+        .field-focus {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(67, 97, 238, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <i class="fas fa-graduation-cap header-icon"></i>
+            <h1>STUDENT REGISTRATION SYSTEM</h1>
+            <p>Accurate, Simple, and Professional Registration Form</p>
+        </div>
+        
+        <div class="form-container">
+            <div class="form-instructions">
+                <h3 class="instructions-title"><i class="fas fa-info-circle"></i> Important Instructions</h3>
+                <ul class="instructions-list">
+                    <li>Fill ALL fields marked with <span class="required-star">*</span></li>
+                    <li>Course field is <strong>MANUAL INPUT</strong> - type your exact course name</li>
+                    <li>Use valid email format (e.g., student@school.edu)</li>
+                    <li>Password must be at least 8 characters with letters and numbers</li>
+                    <li>Phone numbers should include country code (e.g., +254700123456)</li>
+                    <li>Click <strong>SUBMIT</strong> first, then <strong>DOWNLOAD</strong> your form</li>
+                </ul>
+            </div>
+            
+            <form id="studentForm" autocomplete="off">
+                <!-- Row 1: Username and First Name -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="username">Username <span class="required-star">*</span></label>
+                        <div class="input-container">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" id="username" name="username" required 
+                                   placeholder="Enter unique username (e.g., johndoe2023)"
+                                   minlength="3" maxlength="20">
+                        </div>
+                        <div class="validation-message" id="username-validation"></div>
+                        <div class="hint-text">3-20 characters, letters and numbers only</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="firstName">First Name <span class="required-star">*</span></label>
+                        <div class="input-container">
+                            <i class="fas fa-id-card input-icon"></i>
+                            <input type="text" id="firstName" name="firstName" required 
+                                   placeholder="Enter your first name (e.g., John)">
+                        </div>
+                        <div class="validation-message" id="firstName-validation"></div>
+                    </div>
+                </div>
+                
+                <!-- Row 2: Last Name and Institution -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="lastName">Last Name <span class="required-star">*</span></label>
+                        <div class="input-container">
+                            <i class="fas fa-id-card input-icon"></i>
+                            <input type="text" id="lastName" name="lastName" required 
+                                   placeholder="Enter your last name (e.g., Doe)">
+                        </div>
+                        <div class="validation-message" id="lastName-validation"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="institution">Institution <span class="required-star">*</span></label>
+                        <div class="input-container">
+                            <i class="fas fa-university input-icon"></i>
+                            <input type="text" id="institution" name="institution" required 
+                                   placeholder="Enter your school/university name">
+                        </div>
+                        <div class="validation-message" id="institution-validation"></div>
+                    </div>
+                </div>
+                
+                <!-- Row 3: Course and Email -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="course">Course <span class="required-star">*</span></label>
+                        <div class="input-container">
+                            <i class="fas fa-book-open input-icon"></i>
+                            <input type="text" id="course" name="course" required 
+                                   placeholder="Type your course name (e.g., Computer Science)"
+                                   class="field-focus">
+                        </div>
+                        <div class="validation-message" id="course-validation"></div>
+                        <div class="hint-text">⚠️ MANUAL INPUT - Type exactly as required by your institution</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address <span class="required-star">*</span></label>
+                        <div class="input-container">
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input type="email" id="email" name="email" required 
+                                   placeholder="student@institution.edu">
+                        </div>
+                        <div class="validation-message" id="email-validation"></div>
+                        <div class="hint-text">Use your official school email address</div>
+                    </div>
+                </div>
+                
+                <!-- Row 4: Password and Primary Phone -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password">Password <span class="required-star">*</span></label>
+                        <div class="input-container">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="password" name="password" required 
+                                   placeholder="Create a strong password" minlength="8">
+                            <button type="button" class="password-toggle" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="validation-message" id="password-validation"></div>
+                        <div class="hint-text">Minimum 8 characters with letters and numbers</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone1">Primary Phone <span class="required-star">*</span></label>
+                        <div class="input-container">
+                            <i class="fas fa-phone input-icon"></i>
+                            <input type="tel" id="phone1" name="phone1" required 
+                                   placeholder="+254700123456">
+                        </div>
+                        <div class="validation-message" id="phone1-validation"></div>
+                        <div class="hint-text">Include country code, e.g., +254 for Kenya</div>
+                    </div>
+                </div>
+                
+                <!-- Row 5: Secondary Phone -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone2">Secondary Phone (Optional)</label>
+                        <div class="input-container">
+                            <i class="fas fa-phone-alt input-icon"></i>
+                            <input type="tel" id="phone2" name="phone2" 
+                                   placeholder="+254711987654 (Optional)">
+                        </div>
+                        <div class="validation-message" id="phone2-validation"></div>
+                        <div class="hint-text">Alternative phone number (parent/guardian)</div>
+                    </div>
+                </div>
+                
+                <!-- Form Status Messages -->
+                <div class="form-status" id="formStatus"></div>
+                
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button type="submit" class="btn submit-btn" id="submitBtn">
+                        <i class="fas fa-check-circle"></i> SUBMIT FORM
+                    </button>
+                    <button type="button" class="btn download-btn" id="downloadBtn" disabled>
+                        <i class="fas fa-file-word"></i> DOWNLOAD AS WORD
+                    </button>
+                    <button type="reset" class="btn reset-btn" id="resetBtn">
+                        <i class="fas fa-redo"></i> CLEAR FORM
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="footer">
+            <p>© 2023 Student Registration System | Designed for Educational Institutions</p>
+            <div class="student-counter">
+                <i class="fas fa-users"></i> 
+                <span id="studentCount">0</span> Students Registered
+            </div>
+            <p style="margin-top: 15px; font-size: 0.85rem; color: #777;">
+                <i class="fas fa-shield-alt"></i> Your data is secure and will not be shared
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let isFormValid = false;
+        let studentCounter = localStorage.getItem('studentCounter') ? parseInt(localStorage.getItem('studentCounter')) : 0;
+        
+        // DOM Elements
+        const form = document.getElementById('studentForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordField = document.getElementById('password');
+        const formStatus = document.getElementById('formStatus');
+        const studentCount = document.getElementById('studentCount');
+        
+        // Initialize student counter
+        studentCount.textContent = studentCounter;
+        
+        // Toggle password visibility
+        togglePassword.addEventListener('click', function() {
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+            this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+        
+        // Real-time field validation
+        const validationRules = {
+            username: {
+                validate: (value) => /^[a-zA-Z0-9_]{3,20}$/.test(value),
+                message: "Username must be 3-20 characters (letters, numbers, underscore)"
+            },
+            firstName: {
+                validate: (value) => /^[a-zA-Z\s]{2,30}$/.test(value),
+                message: "First name must be 2-30 letters only"
+            },
+            lastName: {
+                validate: (value) => /^[a-zA-Z\s]{2,30}$/.test(value),
+                message: "Last name must be 2-30 letters only"
+            },
+            institution: {
+                validate: (value) => value.length >= 2 && value.length <= 100,
+                message: "Institution name must be 2-100 characters"
+            },
+            course: {
+                validate: (value) => value.length >= 2 && value.length <= 100,
+                message: "Course name must be 2-100 characters"
+            },
+            email: {
+                validate: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+                message: "Please enter a valid email address"
+            },
+            password: {
+                validate: (value) => /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/.test(value),
+                message: "Password must be 8+ chars with letters and numbers"
+            },
+            phone1: {
+                validate: (value) => /^[\+]?[1-9]{1,3}[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}$/.test(value),
+                message: "Please enter a valid phone number with country code"
+            },
+            phone2: {
+                validate: (value) => value === '' || /^[\+]?[1-9]{1,3}[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}$/.test(value),
+                message: "Please enter a valid phone number or leave empty"
+            }
+        };
+        
+        // Add real-time validation to all fields
+        Object.keys(validationRules).forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            const validationElement = document.getElementById(`${fieldId}-validation`);
+            
+            if (field) {
+                field.addEventListener('input', function() {
+                    validateField(fieldId, this.value, validationElement);
+                    checkFormValidity();
+                });
+                
+                field.addEventListener('blur', function() {
+                    validateField(fieldId, this.value, validationElement);
+                    checkFormValidity();
+                });
+            }
+        });
+        
+        // Validate a single field
+        function validateField(fieldId, value, validationElement) {
+            const rule = validationRules[fieldId];
+            const field = document.getElementById(fieldId);
+            
+            if (!rule) return true;
+            
+            const isValid = rule.validate(value);
+            
+            if (validationElement) {
+                if (value === '' && field.required) {
+                    validationElement.textContent = "This field is required";
+                    validationElement.className = "validation-message invalid-message";
+                    field.classList.remove('valid-input');
+                    field.classList.add('invalid-input');
+                } else if (!isValid) {
+                    validationElement.textContent = rule.message;
+                    validationElement.className = "validation-message invalid-message";
+                    field.classList.remove('valid-input');
+                    field.classList.add('invalid-input');
+                } else {
+                    validationElement.textContent = "✓ Valid";
+                    validationElement.className = "validation-message valid-message";
+                    field.classList.remove('invalid-input');
+                    field.classList.add('valid-input');
+                }
+            }
+            
+            return isValid;
+        }
+        
+        // Check if entire form is valid
+        function checkFormValidity() {
+            let allValid = true;
+            
+            Object.keys(validationRules).forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                const validationElement = document.getElementById(`${fieldId}-validation`);
+                
+                if (field && field.required) {
+                    const isValid = validateField(fieldId, field.value, validationElement);
+                    if (!isValid) allValid = false;
+                }
+            });
+            
+            isFormValid = allValid;
+            downloadBtn.disabled = !allValid;
+            
+            if (allValid) {
+                downloadBtn.style.opacity = "1";
+                downloadBtn.style.cursor = "pointer";
+            } else {
+                downloadBtn.style.opacity = "0.7";
+                downloadBtn.style.cursor = "not-allowed";
+            }
+            
+            return allValid;
+        }
+        
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!checkFormValidity()) {
+                showFormStatus("Please fix all errors before submitting", "error");
+                return;
+            }
+            
+            // Get form data
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+            
+            // Store form data in localStorage (simulating database)
+            const studentData = {
+                ...data,
+                timestamp: new Date().toISOString(),
+                id: Date.now()
+            };
+            
+            // Save to localStorage
+            const existingData = JSON.parse(localStorage.getItem('studentRegistrations') || '[]');
+            existingData.push(studentData);
+            localStorage.setItem('studentRegistrations', JSON.stringify(existingData));
+            
+            // Update student counter
+            studentCounter++;
+            localStorage.setItem('studentCounter', studentCounter);
+            studentCount.textContent = studentCounter;
+            
+            // Show success message
+            showFormStatus(`✅ Registration successful! ${data.firstName} ${data.lastName} is now registered. You can now download your form.`, "success");
+            
+            // Enable download button
+            downloadBtn.disabled = false;
+            downloadBtn.style.opacity = "1";
+            downloadBtn.style.cursor = "pointer";
+            
+            // Highlight download button
+            downloadBtn.classList.add('field-focus');
+            setTimeout(() => {
+                downloadBtn.classList.remove('field-focus');
+            }, 3000);
+        });
+        
+        // Download as Word document
+        downloadBtn.addEventListener('click', function() {
+            if (!isFormValid) {
+                showFormStatus("Please submit the form first before downloading", "error");
+                return;
+            }
+            
+            // Get form data
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+            
+            // Generate Word document
+            const wordContent = generateWordDocument(data);
+            
+            // Create and trigger download
+            const blob = new Blob([wordContent], { 
+                type: 'application/msword;charset=utf-8' 
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Student_Registration_${data.firstName}_${data.lastName}.doc`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            // Show download confirmation
+            showFormStatus(`📄 Word document downloaded successfully! File: Student_Registration_${data.firstName}_${data.lastName}.doc`, "success");
+            
+            // Reset form after download (optional)
+            setTimeout(() => {
+                if (confirm("Registration complete! Would you like to clear the form for a new student?")) {
+                    form.reset();
+                    downloadBtn.disabled = true;
+                    downloadBtn.style.opacity = "0.7";
+                    showFormStatus("Form cleared. You can now register another student.", "success");
+                    
+                    // Remove validation classes
+                    document.querySelectorAll('.valid-input, .invalid-input').forEach(el => {
+                        el.classList.remove('valid-input', 'invalid-input');
+                    });
+                    
+                    // Clear validation messages
+                    document.querySelectorAll('.validation-message').forEach(el => {
+                        el.textContent = '';
+                        el.className = 'validation-message';
+                    });
+                }
+            }, 2000);
+        });
+        
+        // Reset form
+        resetBtn.addEventListener('click', function() {
+            if (confirm("Are you sure you want to clear all form data?")) {
+                form.reset();
+                downloadBtn.disabled = true;
+                downloadBtn.style.opacity = "0.7";
+                isFormValid = false;
+                
+                // Remove validation classes
+                document.querySelectorAll('.valid-input, .invalid-input').forEach(el => {
+                    el.classList.remove('valid-input', 'invalid-input');
+                });
+                
+                // Clear validation messages
+                document.querySelectorAll('.validation-message').forEach(el => {
+                    el.textContent = '';
+                    el.className = 'validation-message';
+                });
+                
+                showFormStatus("Form cleared. You can start a new registration.", "success");
+            }
+        });
+        
+        // Show form status messages
+        function showFormStatus(message, type) {
+            formStatus.textContent = message;
+            formStatus.className = "form-status";
+            
+            if (type === "success") {
+                formStatus.classList.add("success-status");
+            } else if (type === "error") {
+                formStatus.classList.add("error-status");
+            }
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                formStatus.style.display = "none";
+            }, 5000);
+        }
+        
+        // Generate Word document content
+        function generateWordDocument(data) {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            const timeStr = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            return `<!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Student Registration - ${data.firstName} ${data.lastName}</title>
+                <style>
+                    body { 
+                        font-family: 'Arial', sans-serif; 
+                        margin: 40px; 
+                        line-height: 1.6; 
+                        color: #333;
+                    }
+                    .header { 
+                        text-align: center; 
+                        margin-bottom: 40px; 
+                        border-bottom: 3px solid #4361ee; 
+                        padding-bottom: 20px;
+                    }
+                    .header h1 { 
+                        color: #4361ee; 
+                        font-size: 28px; 
+                        margin-bottom: 10px;
+                    }
+                    .student-info { 
+                        width: 100%; 
+                        border-collapse: collapse; 
+                        margin-top: 20px;
+                    }
+                    .student-info td { 
+                        padding: 12px 15px; 
+                        border: 1px solid #ddd; 
+                        vertical-align: top;
+                    }
+                    .student-info tr:nth-child(even) { 
+                        background-color: #f9f9f9; 
+                    }
+                    .field-label { 
+                        font-weight: bold; 
+                        color: #3a0ca3; 
+                        width: 35%; 
+                        background-color: #f0f2ff;
+                    }
+                    .timestamp { 
+                        text-align: center; 
+                        margin-top: 40px; 
+                        color: #666; 
+                        font-size: 14px;
+                    }
+                    .footer { 
+                        margin-top: 50px; 
+                        padding-top: 20px; 
+                        border-top: 1px solid #ddd; 
+                        text-align: center; 
+                        color: #777; 
+                        font-size: 12px;
+                    }
+                    .watermark {
+                        position: fixed;
+                        bottom: 50%;
+                        right: 50%;
+                        transform: translate(50%, 50%) rotate(-45deg);
+                        font-size: 80px;
+                        color: rgba(67, 97, 238, 0.1);
+                        z-index: -1;
+                        white-space: nowrap;
+                        font-weight: bold;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="watermark">STUDENT REGISTRATION</div>
+                
+                <div class="header">
+                    <h1>OFFICIAL STUDENT REGISTRATION FORM</h1>
+                    <p>Generated on ${dateStr} at ${timeStr}</p>
+                </div>
+                
+                <table class="student-info">
+                    <tr>
+                        <td class="field-label">Registration ID:</td>
+                        <td>STU-${Date.now().toString().slice(-8)}</td>
+                    </tr>
+                    <tr>
+                        <td class="field-label">Full Name:</td>
+                        <td>${data.firstName} ${data.lastName}</td>
+                    </tr>
+                    <tr>
+                        <td class="field-label">Username:</td>
+                        <td>${data.username}</td>
+                    </tr>
+                    <tr>
+                        <td class="field-label">Institution:</td>
+                        <td>${data.institution}</td>
+                    </tr>
+                    <tr>
+                        <td class="field-label">Course:</td>
+                        <td>${data.course}</td>
+                    </tr>
+                    <tr>
+                        <td class="field-label">Email Address:</td>
+                        <td>${data.email}</td>
+                    </tr>
+                    <tr>
+                        <td class="field-label">Password:</td>
+                        <td>${data.password}</td>
+                    </tr>
+                    <tr>
+                        <td class="field-label">Primary Phone:</td>
+                        <td>${data.phone1}</td>
+                    </tr>
+                    <tr>
+                        <td class="field-label">Secondary Phone:</td>
+                        <td>${data.phone2 || 'Not Provided'}</td>
+                    </tr>
+                </table>
+                
+                <div class="timestamp">
+                    <p><strong>Form submitted electronically</strong></p>
+                    <p>This is an official document generated by the Student Registration System</p>
+                </div>
+                
+                <div class="footer">
+                    <p>© 2023 Student Registration System | This document is valid only with proper student registration</p>
+                    <p>For verification, contact: registrar@institution.edu</p>
+                </div>
+            </body>
+            </html>`;
+        }
+        
+        // Initialize form validation on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Focus on first field
+            document.getElementById('username').focus();
+            
+            // Highlight course field (manual input)
+            const courseField = document.getElementById('course');
+            courseField.addEventListener('focus', function() {
+                this.classList.add('field-focus');
+            });
+            
+            courseField.addEventListener('blur', function() {
+                this.classList.remove('field-focus');
+            });
+            
+            // Show welcome message
+            setTimeout(() => {
+                showFormStatus("Welcome! Please fill in all required fields. The Course field is MANUAL INPUT - type exactly as required.", "success");
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
