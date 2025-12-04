@@ -376,6 +376,12 @@
             70% { box-shadow: 0 0 0 10px rgba(67, 97, 238, 0); }
             100% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0); }
         }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
     </style>
 </head>
 <body>
@@ -549,6 +555,8 @@
     <script>
         // Global variables
         let isFormValid = false;
+        let formSubmitted = false;
+        let currentFormData = null;
         let studentCounter = localStorage.getItem('studentCounter') ? parseInt(localStorage.getItem('studentCounter')) : 0;
         
         // DOM Elements
@@ -675,15 +683,8 @@
             });
             
             isFormValid = allValid;
-            downloadBtn.disabled = !allValid;
-            
-            if (allValid) {
-                downloadBtn.style.opacity = "1";
-                downloadBtn.style.cursor = "pointer";
-            } else {
-                downloadBtn.style.opacity = "0.7";
-                downloadBtn.style.cursor = "not-allowed";
-            }
+            // Only enable download if form is submitted and valid
+            downloadBtn.disabled = !formSubmitted || !allValid;
             
             return allValid;
         }
@@ -699,11 +700,11 @@
             
             // Get form data
             const formData = new FormData(form);
-            const data = Object.fromEntries(formData);
+            currentFormData = Object.fromEntries(formData);
             
             // Store form data in localStorage (simulating database)
             const studentData = {
-                ...data,
+                ...currentFormData,
                 timestamp: new Date().toISOString(),
                 id: Date.now()
             };
@@ -718,13 +719,14 @@
             localStorage.setItem('studentCounter', studentCounter);
             studentCount.textContent = studentCounter;
             
+            // Mark form as submitted
+            formSubmitted = true;
+            
             // Show success message
-            showFormStatus(`✅ Registration successful! ${data.firstName} ${data.lastName} is now registered. You can now download your form.`, "success");
+            showFormStatus(`✅ Registration successful! ${currentFormData.firstName} ${currentFormData.lastName} is now registered. You can now download your form.`, "success");
             
             // Enable download button
             downloadBtn.disabled = false;
-            downloadBtn.style.opacity = "1";
-            downloadBtn.style.cursor = "pointer";
             
             // Highlight download button
             downloadBtn.classList.add('field-focus');
@@ -733,79 +735,74 @@
             }, 3000);
         });
         
-        // Download as Word document
+        // Download as Word document - FIXED VERSION
         downloadBtn.addEventListener('click', function() {
-            if (!isFormValid) {
+            if (!formSubmitted) {
                 showFormStatus("Please submit the form first before downloading", "error");
                 return;
             }
             
-            // Get form data
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData);
+            if (!currentFormData) {
+                showFormStatus("No form data available. Please submit the form first.", "error");
+                return;
+            }
             
-            // Generate Word document
-            const wordContent = generateWordDocument(data);
+            // Generate Word document content
+            const wordContent = generateWordDocument(currentFormData);
             
-            // Create and trigger download
-            const blob = new Blob([wordContent], { 
-                type: 'application/msword;charset=utf-8' 
-            });
-            
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `Student_Registration_${data.firstName}_${data.lastName}.doc`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            
-            // Show download confirmation
-            showFormStatus(`📄 Word document downloaded successfully! File: Student_Registration_${data.firstName}_${data.lastName}.doc`, "success");
-            
-            // Reset form after download (optional)
-            setTimeout(() => {
-                if (confirm("Registration complete! Would you like to clear the form for a new student?")) {
-                    form.reset();
-                    downloadBtn.disabled = true;
-                    downloadBtn.style.opacity = "0.7";
-                    showFormStatus("Form cleared. You can now register another student.", "success");
-                    
-                    // Remove validation classes
-                    document.querySelectorAll('.valid-input, .invalid-input').forEach(el => {
-                        el.classList.remove('valid-input', 'invalid-input');
-                    });
-                    
-                    // Clear validation messages
-                    document.querySelectorAll('.validation-message').forEach(el => {
-                        el.textContent = '';
-                        el.className = 'validation-message';
-                    });
-                }
-            }, 2000);
+            // Create blob and download
+            try {
+                const blob = new Blob([wordContent], { type: 'application/msword' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `Student_Registration_${currentFormData.firstName}_${currentFormData.lastName}.doc`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                // Show download confirmation
+                showFormStatus(`📄 Word document downloaded successfully! File: Student_Registration_${currentFormData.firstName}_${currentFormData.lastName}.doc`, "success");
+                
+                // Reset form after download (optional)
+                setTimeout(() => {
+                    if (confirm("Registration complete! Would you like to clear the form for a new student?")) {
+                        resetForm();
+                    }
+                }, 2000);
+            } catch (error) {
+                console.error("Download error:", error);
+                showFormStatus("Error downloading document. Please try again.", "error");
+            }
         });
         
-        // Reset form
+        // Reset form function
+        function resetForm() {
+            form.reset();
+            downloadBtn.disabled = true;
+            formSubmitted = false;
+            currentFormData = null;
+            isFormValid = false;
+            
+            // Remove validation classes
+            document.querySelectorAll('.valid-input, .invalid-input').forEach(el => {
+                el.classList.remove('valid-input', 'invalid-input');
+            });
+            
+            // Clear validation messages
+            document.querySelectorAll('.validation-message').forEach(el => {
+                el.textContent = '';
+                el.className = 'validation-message';
+            });
+            
+            showFormStatus("Form cleared. You can start a new registration.", "success");
+        }
+        
+        // Reset button
         resetBtn.addEventListener('click', function() {
             if (confirm("Are you sure you want to clear all form data?")) {
-                form.reset();
-                downloadBtn.disabled = true;
-                downloadBtn.style.opacity = "0.7";
-                isFormValid = false;
-                
-                // Remove validation classes
-                document.querySelectorAll('.valid-input, .invalid-input').forEach(el => {
-                    el.classList.remove('valid-input', 'invalid-input');
-                });
-                
-                // Clear validation messages
-                document.querySelectorAll('.validation-message').forEach(el => {
-                    el.textContent = '';
-                    el.className = 'validation-message';
-                });
-                
-                showFormStatus("Form cleared. You can start a new registration.", "success");
+                resetForm();
             }
         });
         
@@ -826,7 +823,7 @@
             }, 5000);
         }
         
-        // Generate Word document content
+        // Generate Word document content - FIXED VERSION
         function generateWordDocument(data) {
             const now = new Date();
             const dateStr = now.toLocaleDateString('en-US', { 
@@ -837,136 +834,163 @@
             });
             const timeStr = now.toLocaleTimeString('en-US', { 
                 hour: '2-digit', 
-                minute: '2-digit' 
+                minute: '2-digit',
+                second: '2-digit'
             });
             
-            return `<!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>Student Registration - ${data.firstName} ${data.lastName}</title>
-                <style>
-                    body { 
-                        font-family: 'Arial', sans-serif; 
-                        margin: 40px; 
-                        line-height: 1.6; 
-                        color: #333;
-                    }
-                    .header { 
-                        text-align: center; 
-                        margin-bottom: 40px; 
-                        border-bottom: 3px solid #4361ee; 
-                        padding-bottom: 20px;
-                    }
-                    .header h1 { 
-                        color: #4361ee; 
-                        font-size: 28px; 
-                        margin-bottom: 10px;
-                    }
-                    .student-info { 
-                        width: 100%; 
-                        border-collapse: collapse; 
-                        margin-top: 20px;
-                    }
-                    .student-info td { 
-                        padding: 12px 15px; 
-                        border: 1px solid #ddd; 
-                        vertical-align: top;
-                    }
-                    .student-info tr:nth-child(even) { 
-                        background-color: #f9f9f9; 
-                    }
-                    .field-label { 
-                        font-weight: bold; 
-                        color: #3a0ca3; 
-                        width: 35%; 
-                        background-color: #f0f2ff;
-                    }
-                    .timestamp { 
-                        text-align: center; 
-                        margin-top: 40px; 
-                        color: #666; 
-                        font-size: 14px;
-                    }
-                    .footer { 
-                        margin-top: 50px; 
-                        padding-top: 20px; 
-                        border-top: 1px solid #ddd; 
-                        text-align: center; 
-                        color: #777; 
-                        font-size: 12px;
-                    }
-                    .watermark {
-                        position: fixed;
-                        bottom: 50%;
-                        right: 50%;
-                        transform: translate(50%, 50%) rotate(-45deg);
-                        font-size: 80px;
-                        color: rgba(67, 97, 238, 0.1);
-                        z-index: -1;
-                        white-space: nowrap;
-                        font-weight: bold;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="watermark">STUDENT REGISTRATION</div>
-                
-                <div class="header">
-                    <h1>OFFICIAL STUDENT REGISTRATION FORM</h1>
-                    <p>Generated on ${dateStr} at ${timeStr}</p>
-                </div>
-                
-                <table class="student-info">
-                    <tr>
-                        <td class="field-label">Registration ID:</td>
-                        <td>STU-${Date.now().toString().slice(-8)}</td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Full Name:</td>
-                        <td>${data.firstName} ${data.lastName}</td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Username:</td>
-                        <td>${data.username}</td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Institution:</td>
-                        <td>${data.institution}</td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Course:</td>
-                        <td>${data.course}</td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Email Address:</td>
-                        <td>${data.email}</td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Password:</td>
-                        <td>${data.password}</td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Primary Phone:</td>
-                        <td>${data.phone1}</td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Secondary Phone:</td>
-                        <td>${data.phone2 || 'Not Provided'}</td>
-                    </tr>
-                </table>
-                
-                <div class="timestamp">
-                    <p><strong>Form submitted electronically</strong></p>
-                    <p>This is an official document generated by the Student Registration System</p>
-                </div>
-                
-                <div class="footer">
-                    <p>© 2023 Student Registration System | This document is valid only with proper student registration</p>
-                    <p>For verification, contact: registrar@institution.edu</p>
-                </div>
-            </body>
-            </html>`;
+            // Create proper Word document with correct headers
+            return `<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="Generator" content="Student Registration System">
+    <meta name="ProgId" content="Word.Document">
+    <title>Student Registration - ${data.firstName} ${data.lastName}</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 2cm;
+            line-height: 1.6;
+            color: #000000;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #4361ee;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            color: #4361ee;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .header h2 {
+            color: #3a0ca3;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        .student-info {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            border: 1px solid #cccccc;
+        }
+        .student-info td {
+            padding: 12px 15px;
+            border: 1px solid #cccccc;
+            vertical-align: top;
+        }
+        .student-info tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .field-label {
+            font-weight: bold;
+            color: #3a0ca3;
+            width: 35%;
+            background-color: #f0f2ff;
+        }
+        .timestamp {
+            text-align: center;
+            margin-top: 40px;
+            color: #666666;
+            font-size: 14px;
+            border-top: 1px solid #cccccc;
+            padding-top: 20px;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #cccccc;
+            text-align: center;
+            color: #777777;
+            font-size: 12px;
+        }
+        .watermark {
+            position: absolute;
+            bottom: 50%;
+            right: 50%;
+            transform: translate(50%, 50%) rotate(-45deg);
+            font-size: 80px;
+            color: rgba(67, 97, 238, 0.1);
+            z-index: -1;
+            white-space: nowrap;
+            font-weight: bold;
+        }
+        .important-note {
+            background-color: #fff8e1;
+            border-left: 5px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div style="position: relative;">
+        <div class="watermark">REGISTERED STUDENT</div>
+        
+        <div class="header">
+            <h1>OFFICIAL STUDENT REGISTRATION FORM</h1>
+            <h2>${data.institution.toUpperCase()}</h2>
+            <p>Student Registration System | ${dateStr} at ${timeStr}</p>
+        </div>
+        
+        <div class="important-note">
+            <strong>IMPORTANT:</strong> This is an official registration document. Keep this file for your records.
+        </div>
+        
+        <table class="student-info">
+            <tr>
+                <td class="field-label">Registration ID:</td>
+                <td><strong>STU-${Date.now().toString().slice(-8)}</strong></td>
+            </tr>
+            <tr>
+                <td class="field-label">Full Name:</td>
+                <td><strong>${data.firstName} ${data.lastName}</strong></td>
+            </tr>
+            <tr>
+                <td class="field-label">Username:</td>
+                <td>${data.username}</td>
+            </tr>
+            <tr>
+                <td class="field-label">Institution:</td>
+                <td>${data.institution}</td>
+            </tr>
+            <tr>
+                <td class="field-label">Course of Study:</td>
+                <td><strong>${data.course}</strong></td>
+            </tr>
+            <tr>
+                <td class="field-label">Email Address:</td>
+                <td>${data.email}</td>
+            </tr>
+            <tr>
+                <td class="field-label">Password:</td>
+                <td>${data.password}</td>
+            </tr>
+            <tr>
+                <td class="field-label">Primary Phone:</td>
+                <td>${data.phone1}</td>
+            </tr>
+            <tr>
+                <td class="field-label">Secondary Phone:</td>
+                <td>${data.phone2 || 'Not Provided'}</td>
+            </tr>
+        </table>
+        
+        <div class="timestamp">
+            <p><strong>Form submitted electronically on ${dateStr} at ${timeStr}</strong></p>
+            <p>This document was automatically generated by the Student Registration System</p>
+        </div>
+        
+        <div class="footer">
+            <p>© 2023 Student Registration System | Official Document</p>
+            <p>For verification, contact: registrar@${data.email.split('@')[1] || 'institution.edu'}</p>
+            <p>Document ID: REG-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+        </div>
+    </div>
+</body>
+</html>`;
         }
         
         // Initialize form validation on page load
@@ -988,6 +1012,12 @@
             setTimeout(() => {
                 showFormStatus("Welcome! Please fill in all required fields. The Course field is MANUAL INPUT - type exactly as required.", "success");
             }, 1000);
+            
+            // Check if there's saved data from previous session
+            const savedData = JSON.parse(localStorage.getItem('studentRegistrations') || '[]');
+            if (savedData.length > 0) {
+                showFormStatus(`Welcome back! ${savedData.length} students have registered using this system.`, "success");
+            }
         });
     </script>
 </body>
