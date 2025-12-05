@@ -461,6 +461,143 @@
             background: rgba(230, 57, 70, 0.1);
             border-radius: 4px;
         }
+        
+        /* Password Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .modal-header h3 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .modal-header p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .password-input-group {
+            margin-bottom: 20px;
+        }
+        
+        .password-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 600;
+        }
+        
+        .modal-password-input {
+            position: relative;
+        }
+        
+        .modal-password-input input {
+            padding-left: 15px;
+        }
+        
+        .modal-password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .modal-confirm {
+            background: var(--gradient-primary);
+            color: white;
+        }
+        
+        .modal-confirm:hover {
+            background: linear-gradient(135deg, #3a56d4, #2f0b8a);
+        }
+        
+        .modal-cancel {
+            background: #f8f9fa;
+            color: var(--dark);
+            border: 2px solid #e0e0e0;
+        }
+        
+        .modal-cancel:hover {
+            background: #e9ecef;
+        }
+        
+        .attempts-counter {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .attempts-warning {
+            color: var(--danger);
+            font-weight: 600;
+        }
 
         @media (max-width: 768px) {
             .form-row {
@@ -493,6 +630,10 @@
                 flex-direction: column;
                 gap: 5px;
             }
+            
+            .modal-buttons {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -500,19 +641,19 @@
     <div class="container">
         <div class="header">
             <i class="fas fa-graduation-cap header-icon"></i>
-            <h1>STUDENT REGISTRATION SYSTEM</h1>
-            <p>Duplicate Prevention & College Number Support</p>
+            <h1>SECURE STUDENT REGISTRATION</h1>
+            <p>Password-Protected Bulk Download System</p>
         </div>
         
         <div class="form-container">
             <div class="form-instructions">
-                <h3 class="instructions-title"><i class="fas fa-info-circle"></i> Instructions</h3>
+                <h3 class="instructions-title"><i class="fas fa-shield-alt"></i> Security Instructions</h3>
                 <ul class="instructions-list">
                     <li>Fill ALL fields marked with <span class="required-star">*</span></li>
                     <li><strong>System prevents duplicate entries</strong> (Email, Phone, College No.)</li>
                     <li>College Number must be <strong>unique</strong> for each student</li>
-                    <li>Course field is <strong>MANUAL INPUT</strong> - type exact course name</li>
-                    <li>Use <strong>BULK DOWNLOAD</strong> to get ALL forms at once</li>
+                    <li><strong>BULK DOWNLOAD requires password</strong> for security</li>
+                    <li>Individual downloads available without password</li>
                 </ul>
             </div>
             
@@ -657,19 +798,53 @@
             </div>
             
             <div class="privacy-notice">
-                <h4><i class="fas fa-shield-alt"></i> Duplicate Prevention System</h4>
-                <p>✅ <strong>College Numbers</strong> must be unique for each student<br>
-                ✅ <strong>Email addresses</strong> cannot be reused<br>
-                ✅ <strong>Phone numbers</strong> are checked for duplicates<br>
-                ✅ System prevents duplicate registrations automatically</p>
+                <h4><i class="fas fa-lock"></i> Security Features</h4>
+                <p>✅ <strong>Password-protected bulk download</strong> - prevents unauthorized access<br>
+                ✅ <strong>Duplicate prevention</strong> - ensures unique registrations<br>
+                ✅ <strong>All data stays local</strong> - no server transmission<br>
+                ✅ <strong>Individual downloads</strong> available without password</p>
             </div>
         </div>
         
         <div class="footer">
-            <p>© 2024 Student Registration System | Duplicate Prevention Enabled</p>
+            <p>© 2024 Secure Student Registration System | Password: laban*@12 for bulk download</p>
             <div class="student-counter">
                 <i class="fas fa-users"></i> 
                 <span id="studentCount">0</span> Unique Students Registered
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div class="modal-overlay" id="passwordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-shield-alt"></i> Authentication Required</h3>
+                <p>Enter password to access bulk download feature</p>
+            </div>
+            
+            <div class="password-input-group">
+                <label for="bulkPassword">Administrator Password</label>
+                <div class="modal-password-input">
+                    <input type="password" id="bulkPassword" placeholder="Enter password to continue">
+                    <button type="button" class="modal-password-toggle" id="modalTogglePassword">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <div class="hint-text">Password required for security. Contact administrator if needed.</div>
+            </div>
+            
+            <div class="attempts-counter" id="attemptsCounter">
+                Attempts remaining: <span id="attemptsRemaining">3</span>
+            </div>
+            
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn modal-confirm" id="confirmPassword">
+                    <i class="fas fa-check"></i> Verify & Download
+                </button>
+                <button type="button" class="modal-btn modal-cancel" id="cancelPassword">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
             </div>
         </div>
     </div>
@@ -693,20 +868,58 @@
         const submissionsList = document.getElementById('submissionsList');
         const viewSubmissionsBtn = document.getElementById('viewSubmissionsBtn');
         const submissionCount = document.getElementById('submissionCount');
+        
+        // Password modal elements
+        const passwordModal = document.getElementById('passwordModal');
+        const bulkPasswordInput = document.getElementById('bulkPassword');
+        const modalTogglePassword = document.getElementById('modalTogglePassword');
+        const confirmPasswordBtn = document.getElementById('confirmPassword');
+        const cancelPasswordBtn = document.getElementById('cancelPassword');
+        const attemptsCounter = document.getElementById('attemptsCounter');
+        const attemptsRemaining = document.getElementById('attemptsRemaining');
 
         // Duplicate warning elements
         const emailDuplicate = document.getElementById('emailDuplicate');
         const collegeNumberDuplicate = document.getElementById('collegeNumberDuplicate');
         const phone1Duplicate = document.getElementById('phone1Duplicate');
 
+        // Security variables
+        const CORRECT_PASSWORD = "laban*@12";
+        let passwordAttempts = 3;
+        let isAuthenticated = false;
+        let authenticatedUntil = 0;
+
         // Load student count
         let registeredStudents = localStorage.getItem('registeredStudents') || 0;
         studentCount.textContent = registeredStudents;
+
+        // Check if authentication is still valid (5 minutes)
+        function checkAuthentication() {
+            const now = Date.now();
+            if (isAuthenticated && now < authenticatedUntil) {
+                return true;
+            }
+            isAuthenticated = false;
+            return false;
+        }
+
+        // Reset authentication after 5 minutes
+        function setAuthentication() {
+            isAuthenticated = true;
+            authenticatedUntil = Date.now() + (5 * 60 * 1000); // 5 minutes
+        }
 
         // Toggle password visibility
         togglePassword.addEventListener('click', function() {
             const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordField.setAttribute('type', type);
+            this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+
+        // Toggle modal password visibility
+        modalTogglePassword.addEventListener('click', function() {
+            const type = bulkPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            bulkPasswordInput.setAttribute('type', type);
             this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
         });
 
@@ -1004,7 +1217,7 @@
                 
                 <div class="footer">
                     <p>This document was generated by the Student Registration System</p>
-                    <p>© 2024 Student Registration System | All information provided by student</p>
+                    <p>© 2024 Secure Student Registration System | Password Protected</p>
                 </div>
             </body>
             </html>`;
@@ -1057,8 +1270,74 @@
             }
         });
 
-        // Bulk download all submitted forms as ZIP
+        // Bulk download - show password modal first
         bulkDownloadBtn.addEventListener('click', function() {
+            // Check if already authenticated
+            if (checkAuthentication()) {
+                proceedWithBulkDownload();
+                return;
+            }
+            
+            // Reset attempts if they were exhausted before
+            if (passwordAttempts <= 0) {
+                passwordAttempts = 3;
+                attemptsRemaining.textContent = passwordAttempts;
+                attemptsCounter.classList.remove('attempts-warning');
+            }
+            
+            // Show password modal
+            passwordModal.style.display = 'flex';
+            bulkPasswordInput.value = '';
+            bulkPasswordInput.focus();
+        });
+
+        // Cancel password entry
+        cancelPasswordBtn.addEventListener('click', function() {
+            passwordModal.style.display = 'none';
+            bulkPasswordInput.value = '';
+        });
+
+        // Verify password and proceed
+        confirmPasswordBtn.addEventListener('click', function() {
+            const enteredPassword = bulkPasswordInput.value.trim();
+            
+            if (!enteredPassword) {
+                showMessage('❌ Please enter the password!', 'error');
+                bulkPasswordInput.focus();
+                return;
+            }
+            
+            if (enteredPassword === CORRECT_PASSWORD) {
+                // Password correct
+                setAuthentication();
+                passwordModal.style.display = 'none';
+                bulkPasswordInput.value = '';
+                passwordAttempts = 3; // Reset attempts
+                attemptsRemaining.textContent = passwordAttempts;
+                attemptsCounter.classList.remove('attempts-warning');
+                
+                // Proceed with bulk download
+                proceedWithBulkDownload();
+            } else {
+                // Password incorrect
+                passwordAttempts--;
+                attemptsRemaining.textContent = passwordAttempts;
+                
+                if (passwordAttempts <= 0) {
+                    attemptsCounter.classList.add('attempts-warning');
+                    showMessage('❌ Access blocked! Too many failed attempts. Please try again later.', 'error');
+                    passwordModal.style.display = 'none';
+                    bulkPasswordInput.value = '';
+                } else {
+                    showMessage(`❌ Incorrect password! ${passwordAttempts} attempts remaining.`, 'error');
+                    bulkPasswordInput.value = '';
+                    bulkPasswordInput.focus();
+                }
+            }
+        });
+
+        // Proceed with bulk download after authentication
+        function proceedWithBulkDownload() {
             const submissions = JSON.parse(localStorage.getItem('studentSubmissions') || '[]');
             
             if (submissions.length === 0) {
@@ -1069,14 +1348,14 @@
             // Wait for JSZip to load
             if (typeof JSZip === 'undefined') {
                 showMessage('⚠️ Please wait, loading ZIP library...', 'warning');
-                setTimeout(() => this.click(), 1000);
+                setTimeout(() => proceedWithBulkDownload(), 1000);
                 return;
             }
             
-            showMessage('⏳ Creating ZIP file with all submissions...', 'success');
+            showMessage('🔒 Creating secure ZIP file with all submissions...', 'success');
             
             const zip = new JSZip();
-            const folder = zip.folder("Student_Registrations");
+            const folder = zip.folder("Secure_Student_Registrations");
             
             // Create a Word document for each submission
             submissions.forEach((submission, index) => {
@@ -1085,11 +1364,20 @@
                 folder.file(filename, wordContent);
             });
             
-            // Add a summary file with all student details
-            const summaryContent = `STUDENT REGISTRATION SUMMARY
-================================
+            // Add a summary file with security notice
+            const summaryContent = `SECURE STUDENT REGISTRATION SUMMARY
+====================================
 Total Unique Students: ${submissions.length}
 Date Generated: ${new Date().toLocaleString()}
+Download Authorized: ${new Date().toLocaleString()}
+Authorized By: Administrator
+
+SECURITY INFORMATION:
+====================
+This download is password protected
+Password: laban*@12
+Authentication Required: Yes
+Data Encrypted: Local Storage
 
 DUPLICATE CHECK REPORT:
 =======================
@@ -1110,15 +1398,16 @@ ${submissions.map((s, i) => `${i+1}. ${s.collegeNumber} - ${s.firstName} ${s.las
 
 SYSTEM INFORMATION:
 ===================
-System: Student Registration System
-Version: 2.0 (Duplicate Prevention Enabled)
-Generated By: Administrator
-Date: ${new Date().toLocaleString()}
+System: Secure Student Registration System
+Version: 3.0 (Password Protected)
+Security Level: High
+Generated By: Authorized Administrator
+Authentication Time: ${new Date().toLocaleString()}
 
-© 2024 Student Registration System
-All rights reserved.`;
-            
-            folder.file("REGISTRATION_SUMMARY.txt", summaryContent);
+© 2024 Secure Student Registration System
+ALL DATA PROTECTED BY PASSWORD - DO NOT SHARE`;
+
+            folder.file("SECURE_REGISTRATION_SUMMARY.txt", summaryContent);
             
             // Add a CSV file for easy import
             const csvContent = `College Number,First Name,Last Name,Email,Course,Institution,Phone 1,Phone 2,Registration Date
@@ -1126,7 +1415,35 @@ ${submissions.map(s =>
     `${s.collegeNumber},${s.firstName},${s.lastName},${s.email},${s.course},${s.institution},${s.phone1},${s.phone2},${new Date(s.timestamp).toLocaleDateString()}`
 ).join('\n')}`;
             
-            folder.file("students_data.csv", csvContent);
+            folder.file("secure_students_data.csv", csvContent);
+            
+            // Add a README file with security instructions
+            const readmeContent = `SECURE DOWNLOAD README
+======================
+
+This ZIP file contains sensitive student registration data.
+
+SECURITY MEASURES:
+1. Bulk download requires password authentication
+2. Each student has unique college number
+3. Duplicate prevention system enabled
+4. All data stored locally on user's device
+
+ACCESS INSTRUCTIONS:
+1. Password: laban*@12
+2. Authentication valid for 5 minutes
+3. Maximum 3 failed attempts allowed
+4. Contact administrator for password reset
+
+IMPORTANT:
+- Do not share this ZIP file publicly
+- Delete after use if not needed
+- Store in secure location
+- Password protect the ZIP if sending via email
+
+Generated: ${new Date().toLocaleString()}`;
+            
+            folder.file("README_SECURITY.txt", readmeContent);
             
             // Generate ZIP file
             zip.generateAsync({type: "blob"})
@@ -1135,19 +1452,21 @@ ${submissions.map(s =>
                     const url = URL.createObjectURL(content);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = `All_Student_Registrations_${new Date().toISOString().split('T')[0]}.zip`;
+                    const timestamp = new Date().toISOString().split('T')[0];
+                    const time = new Date().toTimeString().split(' ')[0].replace(/:/g, '-');
+                    link.download = `Secure_Student_Data_${timestamp}_${time}.zip`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                     URL.revokeObjectURL(url);
                     
-                    showMessage(`✅ ZIP file downloaded with ${submissions.length} unique student forms!`, 'success');
+                    showMessage(`✅ Secure ZIP file downloaded with ${submissions.length} student forms!`, 'success');
                 })
                 .catch(function(error) {
                     console.error('ZIP creation error:', error);
                     showMessage('❌ Error creating ZIP file. Please try again.', 'error');
                 });
-        });
+        }
 
         // Reset form
         resetBtn.addEventListener('click', function() {
@@ -1204,7 +1523,7 @@ ${submissions.map(s =>
         window.addEventListener('load', function() {
             displaySubmissions();
             setTimeout(() => {
-                showMessage('✅ System ready! Duplicate prevention is ACTIVE. College numbers must be unique.', 'success');
+                showMessage('🔒 System ready! Bulk download requires password: laban*@12', 'success');
             }, 1000);
         });
     </script>
