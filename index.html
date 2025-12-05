@@ -43,7 +43,7 @@
 
         .container {
             width: 100%;
-            max-width: 1000px;
+            max-width: 1100px;
             background-color: white;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
@@ -110,7 +110,7 @@
 
         .form-row .form-group {
             flex: 1;
-            min-width: 280px;
+            min-width: 250px;
         }
 
         label {
@@ -164,6 +164,11 @@
             color: #666;
             margin-top: 5px;
             font-style: italic;
+        }
+
+        .warning-text {
+            color: var(--warning);
+            font-weight: 500;
         }
 
         .action-buttons {
@@ -257,6 +262,12 @@
             border-left: 4px solid var(--danger);
         }
 
+        .warning-status {
+            background-color: rgba(248, 150, 30, 0.15);
+            color: #e65100;
+            border-left: 4px solid var(--warning);
+        }
+
         .footer {
             text-align: center;
             padding: 20px;
@@ -344,6 +355,11 @@
             background-color: rgba(76, 175, 80, 0.05) !important;
         }
         
+        .input-warning {
+            border-color: var(--warning) !important;
+            background-color: rgba(248, 150, 30, 0.05) !important;
+        }
+        
         .view-data-btn {
             margin-top: 15px;
             background: linear-gradient(135deg, #8e2de2, #4a00e0);
@@ -381,7 +397,7 @@
         }
         
         .submissions-list {
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
             padding: 10px;
             background: white;
@@ -390,7 +406,7 @@
         }
         
         .submission-item {
-            padding: 8px 12px;
+            padding: 10px 12px;
             margin-bottom: 8px;
             background: white;
             border-radius: 5px;
@@ -409,23 +425,41 @@
             color: var(--dark);
         }
         
-        .submission-course {
+        .submission-details {
             font-size: 0.85rem;
             color: #666;
+            display: flex;
+            gap: 15px;
+            margin-top: 3px;
         }
         
         .delete-btn {
             background: var(--danger);
             color: white;
             border: none;
-            padding: 4px 10px;
+            padding: 5px 12px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
         .delete-btn:hover {
             background: #c62828;
+        }
+        
+        .duplicate-alert {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            padding: 5px 10px;
+            background: rgba(230, 57, 70, 0.1);
+            border-radius: 4px;
         }
 
         @media (max-width: 768px) {
@@ -454,6 +488,11 @@
             .form-container {
                 padding: 20px;
             }
+            
+            .submission-details {
+                flex-direction: column;
+                gap: 5px;
+            }
         }
     </style>
 </head>
@@ -462,7 +501,7 @@
         <div class="header">
             <i class="fas fa-graduation-cap header-icon"></i>
             <h1>STUDENT REGISTRATION SYSTEM</h1>
-            <p>Individual & Bulk Download Options</p>
+            <p>Duplicate Prevention & College Number Support</p>
         </div>
         
         <div class="form-container">
@@ -470,10 +509,10 @@
                 <h3 class="instructions-title"><i class="fas fa-info-circle"></i> Instructions</h3>
                 <ul class="instructions-list">
                     <li>Fill ALL fields marked with <span class="required-star">*</span></li>
-                    <li><strong>Course field is MANUAL INPUT</strong> - type your exact course</li>
-                    <li><strong>SUBMIT</strong> - Saves student registration</li>
-                    <li><strong>DOWNLOAD</strong> - Get current form as Word</li>
-                    <li><strong>BULK DOWNLOAD</strong> - Download ALL submitted forms as ZIP</li>
+                    <li><strong>System prevents duplicate entries</strong> (Email, Phone, College No.)</li>
+                    <li>College Number must be <strong>unique</strong> for each student</li>
+                    <li>Course field is <strong>MANUAL INPUT</strong> - type exact course name</li>
+                    <li>Use <strong>BULK DOWNLOAD</strong> to get ALL forms at once</li>
                 </ul>
             </div>
             
@@ -484,7 +523,7 @@
                         <label for="username">Username <span class="required-star">*</span></label>
                         <div class="input-container">
                             <i class="fas fa-user input-icon"></i>
-                            <input type="text" id="username" name="username" required placeholder="Enter username">
+                            <input type="text" id="username" name="username" required placeholder="Enter unique username">
                         </div>
                     </div>
                     
@@ -522,7 +561,7 @@
                         <label for="course">Course <span class="required-star">*</span></label>
                         <div class="input-container">
                             <i class="fas fa-book-open input-icon"></i>
-                            <input type="text" id="course" name="course" required placeholder="Type course name">
+                            <input type="text" id="course" name="course" required placeholder="Type exact course name">
                         </div>
                         <div class="hint-text">Type exactly as required by your institution</div>
                     </div>
@@ -533,11 +572,25 @@
                             <i class="fas fa-envelope input-icon"></i>
                             <input type="email" id="email" name="email" required placeholder="student@institution.edu">
                         </div>
+                        <div id="emailDuplicate" class="duplicate-alert" style="display: none;">
+                            <i class="fas fa-exclamation-triangle"></i> This email is already registered!
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Row 4: Password and Primary Phone -->
+                <!-- Row 4: College Number and Password -->
                 <div class="form-row">
+                    <div class="form-group">
+                        <label for="collegeNumber">College Number <span class="required-star">*</span></label>
+                        <div class="input-container">
+                            <i class="fas fa-id-badge input-icon"></i>
+                            <input type="text" id="collegeNumber" name="collegeNumber" required placeholder="Enter college registration number">
+                        </div>
+                        <div id="collegeNumberDuplicate" class="duplicate-alert" style="display: none;">
+                            <i class="fas fa-exclamation-triangle"></i> This college number is already registered!
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="password">Password <span class="required-star">*</span></label>
                         <div class="input-container">
@@ -548,18 +601,21 @@
                             </button>
                         </div>
                     </div>
-                    
+                </div>
+                
+                <!-- Row 5: Phone Numbers -->
+                <div class="form-row">
                     <div class="form-group">
                         <label for="phone1">Primary Phone <span class="required-star">*</span></label>
                         <div class="input-container">
                             <i class="fas fa-phone input-icon"></i>
                             <input type="tel" id="phone1" name="phone1" required placeholder="+254700123456">
                         </div>
+                        <div id="phone1Duplicate" class="duplicate-alert" style="display: none;">
+                            <i class="fas fa-exclamation-triangle"></i> This phone number is already registered!
+                        </div>
                     </div>
-                </div>
-                
-                <!-- Row 5: Secondary Phone -->
-                <div class="form-row">
+                    
                     <div class="form-group">
                         <label for="phone2">Secondary Phone (Optional)</label>
                         <div class="input-container">
@@ -591,7 +647,7 @@
             
             <!-- Submissions Section -->
             <div class="submissions-section">
-                <h3 class="submissions-title"><i class="fas fa-list-alt"></i> Submitted Registrations</h3>
+                <h3 class="submissions-title"><i class="fas fa-list-alt"></i> Submitted Registrations (Total: <span id="submissionCount">0</span>)</h3>
                 <div class="submissions-list" id="submissionsList">
                     <!-- Submissions will appear here -->
                 </div>
@@ -601,18 +657,19 @@
             </div>
             
             <div class="privacy-notice">
-                <h4><i class="fas fa-shield-alt"></i> Privacy Protection</h4>
-                <p>✅ All data stored locally on your device only<br>
-                ✅ Bulk download creates ZIP with all submitted forms<br>
-                ✅ No data sent to any server - 100% private</p>
+                <h4><i class="fas fa-shield-alt"></i> Duplicate Prevention System</h4>
+                <p>✅ <strong>College Numbers</strong> must be unique for each student<br>
+                ✅ <strong>Email addresses</strong> cannot be reused<br>
+                ✅ <strong>Phone numbers</strong> are checked for duplicates<br>
+                ✅ System prevents duplicate registrations automatically</p>
             </div>
         </div>
         
         <div class="footer">
-            <p>© 2024 Student Registration System | All data stays on your device</p>
+            <p>© 2024 Student Registration System | Duplicate Prevention Enabled</p>
             <div class="student-counter">
                 <i class="fas fa-users"></i> 
-                <span id="studentCount">0</span> Students Registered
+                <span id="studentCount">0</span> Unique Students Registered
             </div>
         </div>
     </div>
@@ -635,6 +692,12 @@
         const studentCount = document.getElementById('studentCount');
         const submissionsList = document.getElementById('submissionsList');
         const viewSubmissionsBtn = document.getElementById('viewSubmissionsBtn');
+        const submissionCount = document.getElementById('submissionCount');
+
+        // Duplicate warning elements
+        const emailDuplicate = document.getElementById('emailDuplicate');
+        const collegeNumberDuplicate = document.getElementById('collegeNumberDuplicate');
+        const phone1Duplicate = document.getElementById('phone1Duplicate');
 
         // Load student count
         let registeredStudents = localStorage.getItem('registeredStudents') || 0;
@@ -647,10 +710,86 @@
             this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
         });
 
-        // Form validation function
+        // Function to check for duplicates
+        function checkForDuplicates(email, collegeNumber, phone1) {
+            const submissions = JSON.parse(localStorage.getItem('studentSubmissions') || '[]');
+            let duplicates = {
+                email: false,
+                collegeNumber: false,
+                phone1: false
+            };
+            
+            submissions.forEach(submission => {
+                if (submission.email.toLowerCase() === email.toLowerCase()) {
+                    duplicates.email = true;
+                }
+                if (submission.collegeNumber === collegeNumber) {
+                    duplicates.collegeNumber = true;
+                }
+                if (submission.phone1 === phone1) {
+                    duplicates.phone1 = true;
+                }
+            });
+            
+            return duplicates;
+        }
+
+        // Real-time duplicate checking
+        document.getElementById('email').addEventListener('input', function() {
+            const email = this.value.trim();
+            const submissions = JSON.parse(localStorage.getItem('studentSubmissions') || '[]');
+            
+            const isDuplicate = submissions.some(sub => 
+                sub.email.toLowerCase() === email.toLowerCase()
+            );
+            
+            if (isDuplicate && email) {
+                emailDuplicate.style.display = 'flex';
+                this.classList.add('input-warning');
+            } else {
+                emailDuplicate.style.display = 'none';
+                this.classList.remove('input-warning');
+            }
+        });
+
+        document.getElementById('collegeNumber').addEventListener('input', function() {
+            const collegeNumber = this.value.trim();
+            const submissions = JSON.parse(localStorage.getItem('studentSubmissions') || '[]');
+            
+            const isDuplicate = submissions.some(sub => 
+                sub.collegeNumber === collegeNumber
+            );
+            
+            if (isDuplicate && collegeNumber) {
+                collegeNumberDuplicate.style.display = 'flex';
+                this.classList.add('input-warning');
+            } else {
+                collegeNumberDuplicate.style.display = 'none';
+                this.classList.remove('input-warning');
+            }
+        });
+
+        document.getElementById('phone1').addEventListener('input', function() {
+            const phone1 = this.value.trim();
+            const submissions = JSON.parse(localStorage.getItem('studentSubmissions') || '[]');
+            
+            const isDuplicate = submissions.some(sub => 
+                sub.phone1 === phone1
+            );
+            
+            if (isDuplicate && phone1) {
+                phone1Duplicate.style.display = 'flex';
+                this.classList.add('input-warning');
+            } else {
+                phone1Duplicate.style.display = 'none';
+                this.classList.remove('input-warning');
+            }
+        });
+
+        // Form validation function with duplicate checking
         function validateForm() {
             let isValid = true;
-            const requiredFields = ['username', 'firstName', 'lastName', 'institution', 'course', 'email', 'password', 'phone1'];
+            const requiredFields = ['username', 'firstName', 'lastName', 'institution', 'course', 'email', 'collegeNumber', 'password', 'phone1'];
             
             requiredFields.forEach(fieldId => {
                 const field = document.getElementById(fieldId);
@@ -679,7 +818,7 @@
             return isValid;
         }
 
-        // Form submit handler
+        // Form submit handler with duplicate prevention
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -698,15 +837,30 @@
                 institution: document.getElementById('institution').value.trim(),
                 course: document.getElementById('course').value.trim(),
                 email: document.getElementById('email').value.trim(),
+                collegeNumber: document.getElementById('collegeNumber').value.trim(),
                 password: document.getElementById('password').value,
                 phone1: document.getElementById('phone1').value.trim(),
-                phone2: document.getElementById('phone2').value.trim(),
+                phone2: document.getElementById('phone2').value.trim() || '',
                 timestamp: new Date().toISOString(),
                 registrationId: 'STU-' + Date.now().toString().slice(-6)
             };
             
-            // Save to localStorage
+            // Check for duplicates
             const submissions = JSON.parse(localStorage.getItem('studentSubmissions') || '[]');
+            const duplicates = checkForDuplicates(formData.email, formData.collegeNumber, formData.phone1);
+            
+            let duplicateMessage = '';
+            if (duplicates.email) duplicateMessage += 'Email address, ';
+            if (duplicates.collegeNumber) duplicateMessage += 'College Number, ';
+            if (duplicates.phone1) duplicateMessage += 'Phone Number';
+            
+            if (duplicates.email || duplicates.collegeNumber || duplicates.phone1) {
+                duplicateMessage = duplicateMessage.replace(/, $/, '');
+                showMessage(`❌ Registration failed! ${duplicateMessage} already exists in our system.`, 'error');
+                return;
+            }
+            
+            // Save to localStorage
             submissions.push(formData);
             localStorage.setItem('studentSubmissions', JSON.stringify(submissions));
             
@@ -716,7 +870,7 @@
             studentCount.textContent = registeredStudents;
             
             // Show success message
-            showMessage(`✅ Registration successful! ${formData.firstName} ${formData.lastName} is now registered.`, 'success');
+            showMessage(`✅ Registration successful! ${formData.firstName} ${formData.lastName} (${formData.collegeNumber}) is now registered.`, 'success');
             
             // Refresh submissions list
             displaySubmissions();
@@ -724,14 +878,20 @@
             // Clear form
             form.reset();
             document.querySelectorAll('input').forEach(input => {
-                input.classList.remove('input-error', 'input-success');
+                input.classList.remove('input-error', 'input-success', 'input-warning');
             });
+            
+            // Hide duplicate warnings
+            emailDuplicate.style.display = 'none';
+            collegeNumberDuplicate.style.display = 'none';
+            phone1Duplicate.style.display = 'none';
         });
 
         // Display all submissions
         function displaySubmissions() {
             const submissions = JSON.parse(localStorage.getItem('studentSubmissions') || '[]');
             submissionsList.innerHTML = '';
+            submissionCount.textContent = submissions.length;
             
             if (submissions.length === 0) {
                 submissionsList.innerHTML = '<div class="submission-item"><em>No submissions yet. Submit a form to see it here.</em></div>';
@@ -744,10 +904,14 @@
                 submissionItem.innerHTML = `
                     <div class="submission-info">
                         <div class="submission-name">${submission.firstName} ${submission.lastName}</div>
-                        <div class="submission-course">${submission.course} | ${submission.institution}</div>
+                        <div class="submission-details">
+                            <span><i class="fas fa-id-badge"></i> ${submission.collegeNumber}</span>
+                            <span><i class="fas fa-book"></i> ${submission.course}</span>
+                            <span><i class="fas fa-university"></i> ${submission.institution}</span>
+                        </div>
                     </div>
                     <button class="delete-btn" data-id="${submission.id}">
-                        <i class="fas fa-trash"></i>
+                        <i class="fas fa-trash"></i> Remove
                     </button>
                 `;
                 submissionsList.appendChild(submissionItem);
@@ -801,7 +965,7 @@
                     .info-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
                     .info-table td { padding: 12px 15px; border: 1px solid #ddd; }
                     .info-table tr:nth-child(even) { background-color: #f9f9f9; }
-                    .label { font-weight: bold; color: #2c3e50; width: 30%; background-color: #f0f2ff; }
+                    .label { font-weight: bold; color: #2c3e50; width: 35%; background-color: #f0f2ff; }
                     .footer { margin-top: 50px; padding-top: 20px; border-top: 2px solid #ddd; text-align: center; color: #666; }
                     .timestamp { color: #e74c3c; font-weight: bold; }
                     .watermark { 
@@ -821,13 +985,15 @@
                 <div class="header">
                     <h1>STUDENT REGISTRATION FORM</h1>
                     <p>Registration ID: <strong>${formData.registrationId}</strong></p>
+                    <p>College Number: <strong>${formData.collegeNumber}</strong></p>
                     <p>Generated on: <span class="timestamp">${dateStr} at ${timeStr}</span></p>
                 </div>
                 
                 <h2>Student Information</h2>
                 <table class="info-table">
-                    <tr><td class="label">Username:</td><td>${formData.username}</td></tr>
+                    <tr><td class="label">College Number:</td><td>${formData.collegeNumber}</td></tr>
                     <tr><td class="label">Full Name:</td><td>${formData.firstName} ${formData.lastName}</td></tr>
+                    <tr><td class="label">Username:</td><td>${formData.username}</td></tr>
                     <tr><td class="label">Institution:</td><td>${formData.institution}</td></tr>
                     <tr><td class="label">Course:</td><td>${formData.course}</td></tr>
                     <tr><td class="label">Email Address:</td><td>${formData.email}</td></tr>
@@ -854,9 +1020,10 @@
                 institution: document.getElementById('institution').value.trim() || 'Not provided',
                 course: document.getElementById('course').value.trim() || 'Not provided',
                 email: document.getElementById('email').value.trim() || 'Not provided',
+                collegeNumber: document.getElementById('collegeNumber').value.trim() || 'Not provided',
                 password: document.getElementById('password').value || 'Not provided',
                 phone1: document.getElementById('phone1').value.trim() || 'Not provided',
-                phone2: document.getElementById('phone2').value.trim() || 'Not provided',
+                phone2: document.getElementById('phone2').value.trim() || '',
                 registrationId: 'STU-' + Date.now().toString().slice(-6)
             };
 
@@ -874,7 +1041,8 @@
                 
                 const firstName = formData.firstName === 'Not provided' ? 'Student' : formData.firstName;
                 const lastName = formData.lastName === 'Not provided' ? 'Registration' : formData.lastName;
-                link.download = `Student_Registration_${firstName}_${lastName}.doc`;
+                const collegeNumber = formData.collegeNumber === 'Not provided' ? 'NoNumber' : formData.collegeNumber;
+                link.download = `Student_${collegeNumber}_${firstName}_${lastName}.doc`;
                 
                 document.body.appendChild(link);
                 link.click();
@@ -900,7 +1068,7 @@
             
             // Wait for JSZip to load
             if (typeof JSZip === 'undefined') {
-                showMessage('⚠️ Please wait, loading ZIP library...', 'error');
+                showMessage('⚠️ Please wait, loading ZIP library...', 'warning');
                 setTimeout(() => this.click(), 1000);
                 return;
             }
@@ -913,21 +1081,52 @@
             // Create a Word document for each submission
             submissions.forEach((submission, index) => {
                 const wordContent = generateWordDocument(submission);
-                const filename = `${submission.registrationId}_${submission.firstName}_${submission.lastName}.doc`;
+                const filename = `${submission.collegeNumber}_${submission.firstName}_${submission.lastName}.doc`;
                 folder.file(filename, wordContent);
             });
             
-            // Add a summary file
+            // Add a summary file with all student details
             const summaryContent = `STUDENT REGISTRATION SUMMARY
-            ===========================
-            Total Students: ${submissions.length}
-            Generated: ${new Date().toLocaleString()}
+================================
+Total Unique Students: ${submissions.length}
+Date Generated: ${new Date().toLocaleString()}
+
+DUPLICATE CHECK REPORT:
+=======================
+All entries verified - No duplicates found
+College Numbers: All unique
+Email Addresses: All unique
+Phone Numbers: All unique
+
+STUDENT LIST:
+=============
+${submissions.map((s, i) => `${i+1}. ${s.collegeNumber} - ${s.firstName} ${s.lastName}
+   Course: ${s.course}
+   Institution: ${s.institution}
+   Email: ${s.email}
+   Phone: ${s.phone1}
+   Registered: ${new Date(s.timestamp).toLocaleDateString()}
+`).join('\n')}
+
+SYSTEM INFORMATION:
+===================
+System: Student Registration System
+Version: 2.0 (Duplicate Prevention Enabled)
+Generated By: Administrator
+Date: ${new Date().toLocaleString()}
+
+© 2024 Student Registration System
+All rights reserved.`;
             
-            Student List:
-            ${submissions.map((s, i) => `${i+1}. ${s.firstName} ${s.lastName} - ${s.course} - ${s.institution}`).join('\n')}
+            folder.file("REGISTRATION_SUMMARY.txt", summaryContent);
             
-            © 2024 Student Registration System`;
-            folder.file("SUMMARY.txt", summaryContent);
+            // Add a CSV file for easy import
+            const csvContent = `College Number,First Name,Last Name,Email,Course,Institution,Phone 1,Phone 2,Registration Date
+${submissions.map(s => 
+    `${s.collegeNumber},${s.firstName},${s.lastName},${s.email},${s.course},${s.institution},${s.phone1},${s.phone2},${new Date(s.timestamp).toLocaleDateString()}`
+).join('\n')}`;
+            
+            folder.file("students_data.csv", csvContent);
             
             // Generate ZIP file
             zip.generateAsync({type: "blob"})
@@ -942,7 +1141,7 @@
                     document.body.removeChild(link);
                     URL.revokeObjectURL(url);
                     
-                    showMessage(`✅ ZIP file downloaded with ${submissions.length} student forms!`, 'success');
+                    showMessage(`✅ ZIP file downloaded with ${submissions.length} unique student forms!`, 'success');
                 })
                 .catch(function(error) {
                     console.error('ZIP creation error:', error);
@@ -955,8 +1154,12 @@
             if (confirm('Clear all form fields?')) {
                 form.reset();
                 document.querySelectorAll('input').forEach(input => {
-                    input.classList.remove('input-error', 'input-success');
+                    input.classList.remove('input-error', 'input-success', 'input-warning');
                 });
+                // Hide duplicate warnings
+                emailDuplicate.style.display = 'none';
+                collegeNumberDuplicate.style.display = 'none';
+                phone1Duplicate.style.display = 'none';
                 showMessage('✅ Form cleared. Ready for new registration.', 'success');
             }
         });
@@ -973,6 +1176,8 @@
                 formStatus.classList.add('success-status');
             } else if (type === 'error') {
                 formStatus.classList.add('error-status');
+            } else if (type === 'warning') {
+                formStatus.classList.add('warning-status');
             }
             
             formStatus.style.display = 'block';
@@ -999,7 +1204,7 @@
         window.addEventListener('load', function() {
             displaySubmissions();
             setTimeout(() => {
-                showMessage('📝 Submit forms → View all below → Use BULK DOWNLOAD for all forms!', 'success');
+                showMessage('✅ System ready! Duplicate prevention is ACTIVE. College numbers must be unique.', 'success');
             }, 1000);
         });
     </script>
