@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>NEXUS BYPASS · Secure Control Panel</title>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', system-ui, 'Poppins', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(ellipse at 20% 30%, #0a0f1f, #020617);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* animated glowing background */
+        .lighting-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.4;
+            animation: floatOrb 18s infinite alternate ease-in-out;
+        }
+
+        .orb1 { width: 55vw; height: 55vw; background: #ff3366; top: -15vh; left: -10vw; animation-duration: 20s; }
+        .orb2 { width: 50vw; height: 50vw; background: #3b82f6; bottom: -20vh; right: -5vw; filter: blur(100px); animation-duration: 22s; }
+        .orb3 { width: 45vw; height: 45vw; background: #f59e0b; top: 45vh; left: 55vw; opacity: 0.35; animation-duration: 16s; }
+        .orb4 { width: 60vw; height: 60vw; background: #8b5cf6; bottom: -25vh; left: -15vw; filter: blur(110px); animation-duration: 24s; }
+        .orb5 { width: 35vw; height: 35vw; background: #06b6d4; top: 10vh; right: 20vw; opacity: 0.5; animation-duration: 14s; }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, -35px) scale(1.08); }
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 12;
+            width: 100%;
+            max-width: 1400px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* glass auth card */
+        .glass-card {
+            background: rgba(12, 20, 35, 0.4);
+            backdrop-filter: blur(18px) saturate(180%);
+            border-radius: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 35px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset, 0 0 35px rgba(0, 160, 255, 0.3);
+            padding: 2.4rem 2rem;
+            width: 100%;
+            max-width: 460px;
+            color: white;
+        }
+
+        /* dashboard panel */
+        .dashboard-card {
+            background: rgba(8, 16, 30, 0.45);
+            backdrop-filter: blur(22px);
+            border-radius: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2.2rem 2rem;
+            width: 100%;
+            max-width: 1280px;
+            box-shadow: 0 40px 80px -12px #000000b3, 0 0 35px #00a6ff33;
+            color: white;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .dashboard-card::-webkit-scrollbar { width: 6px; }
+        .dashboard-card::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 8px; }
+        .dashboard-card::-webkit-scrollbar-thumb { background: #f9731680; border-radius: 8px; }
+
+        h2 {
+            font-weight: 700;
+            font-size: 1.9rem;
+            background: linear-gradient(130deg, #FFE6B0, #C3B5FF, #7AD0FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .sub-glow {
+            color: rgba(255, 245, 210, 0.9);
+            margin-bottom: 1.8rem;
+            font-weight: 400;
+            font-size: 0.95rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.3rem;
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ffcd94;
+            font-size: 1.15rem;
+            z-index: 2;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.9rem 1rem 0.9rem 3rem;
+            background: rgba(20, 30, 55, 0.6);
+            border: 1.5px solid rgba(255,255,200,0.2);
+            border-radius: 60px;
+            font-size: 1rem;
+            color: white;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: #ffb347;
+            box-shadow: 0 0 20px #ffb34766;
+            background: rgba(25, 40, 65, 0.8);
+        }
+
+        .input-error {
+            border-color: #ff6b6b !important;
+            box-shadow: 0 0 15px #ff475766 !important;
+        }
+
+        .error-message {
+            color: #ffa2a2;
+            font-size: 0.75rem;
+            margin-left: 1rem;
+            margin-top: 5px;
+        }
+
+        .btn {
+            border: none;
+            padding: 0.9rem 1.5rem;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            background: linear-gradient(105deg, #f97316, #e11d48);
+            box-shadow: 0 10px 22px -6px #ff4d6d99;
+            color: #0a0c1a;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.01);
+            background: linear-gradient(105deg, #ff8c42, #ff2f5e);
+            box-shadow: 0 15px 28px -8px #ff3b6f;
+        }
+
+        .toggle-text {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .toggle-link {
+            color: #ffcf8a;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* dashboard header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(255,215,150,0.3);
+        }
+
+        .welcome-title {
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fbe9c3, #ffc49b, #b2e6ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logout-btn {
+            background: rgba(255,120,100,0.15);
+            border: 1px solid #ff9f7c;
+            border-radius: 40px;
+            padding: 0.55rem 1.5rem;
+            color: #ffe0b5;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #e3647e30;
+            border-color: #ffb47b;
+        }
+
+        /* THREE MAIN BUTTONS SECTION - exactly as requested: Wifi bypass, Social media bypass, Saf/Airtel bypass */
+        .main-bypass-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+            margin: 2rem 0 2rem;
+        }
+
+        .bypass-mega-card {
+            background: rgba(20, 30, 50, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 2rem;
+            border: 1px solid rgba(255,200,150,0.3);
+            overflow: hidden;
+            transition: all 0.25s;
+        }
+
+        .bypass-mega-card:hover {
+            border-color: rgba(255,180,100,0.7);
+            box-shadow: 0 20px 35px -12px #00000080;
+        }
+
+        .card-header-main {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.2rem 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 1px solid rgba(255,215,150,0.3);
+        }
+
+        .card-header-main i {
+            font-size: 2rem;
+            color: #ffcd7e;
+            filter: drop-shadow(0 0 8px #f59e0b);
+        }
+
+        .card-header-main h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #fff0cf, #ffd6a5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .sub-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 1.5rem 1.8rem;
+        }
+
+        .bypass-option {
+            flex: 1;
+            min-width: 180px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255,200,120,0.4);
+            border-radius: 60px;
+            padding: 0.9rem 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .bypass-option:hover {
+            background: rgba(249,115,22,0.2);
+            border-color: #ffa559;
+            transform: translateX(5px);
+        }
+
+        .bypass-option.active {
+            background: linear-gradient(125deg, rgba(249,115,22,0.3), rgba(225,29,72,0.25));
+            border-color: #ffa559;
+            box-shadow: 0 0 12px #ff874d66;
+        }
+
+        .option-status {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.9rem;
+            border-radius: 40px;
+            background: #00c48c20;
+            color: #6effc0;
+            border: 1px solid #6effc066;
+        }
+
+        .option-status.inactive {
+            background: #ff6b6b20;
+            color: #ffa7a7;
+            border-color: #ff6b6b66;
+        }
+
+        /* WhatsApp package area */
+        .package-whatsapp-area {
+            margin-top: 2rem;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 200, 100, 0.5);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+
+        .package-input-group {
+            flex: 2;
+            min-width: 160px;
+        }
+
+        .package-input-group label {
+            font-size: 0.8rem;
+            color: #ffd7a5;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .package-input-group input, .package-input-group select {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid #ffbc6e70;
+            border-radius: 60px;
+            padding: 0.7rem 1rem;
+            color: white;
+            outline: none;
+        }
+
+        .whatsapp-btn {
+            background: #25d366;
+            border: none;
+            padding: 0.7rem 1.6rem;
+            border-radius: 60px;
+            font-weight: bold;
+            color: #0a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .whatsapp-btn:hover {
+            background: #20bd59;
+            transform: scale(1.02);
+            box-shadow: 0 0 15px #25d366aa;
+        }
+
+        .activity-log {
+            margin-top: 2rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 2rem;
+            padding: 1.5rem;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .clear-log {
+            background: #ff5f5f20;
+            border: 1px solid #ff8a8a;
+            border-radius: 30px;
+            padding: 0.3rem 1rem;
+            color: #ffb3b3;
+            cursor: pointer;
+        }
+
+        .log-item {
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.85rem;
+        }
+
+        .log-time {
+            margin-left: auto;
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            background: #0f172ad9;
+            backdrop-filter: blur(12px);
+            padding: 0.9rem 1.5rem;
+            border-radius: 50px;
+            border-left: 5px solid;
+            color: white;
+            font-weight: 500;
+            animation: slideNotif 0.25s ease;
+        }
+
+        @keyframes slideNotif {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 760px) {
+            .dashboard-card, .glass-card { padding: 1.5rem; }
+            .package-whatsapp-area { flex-direction: column; align-items: stretch; }
+            .sub-buttons { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="lighting-bg">
+        <div class="glow-orb orb1"></div>
+        <div class="glow-orb orb2"></div>
+        <div class="glow-orb orb3"></div>
+        <div class="glow-orb orb4"></div>
+        <div class="glow-orb orb5"></div>
+    </div>
+    <div id="notifContainer"></div>
+
+    <div class="app-container">
+        <!-- AUTH CARD -->
+        <div id="authCard" class="glass-card">
+            <div id="loginPanel">
+                <h2><i class="fas fa-bolt"></i> NEXUS BYPASS</h2>
+                <div class="sub-glow">secure authentication · encrypted tunnel</div>
+                <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="loginEmail" class="input-field" placeholder="Email address"></div>
+                <div class="error-message" id="loginEmailErr"></div>
+                <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="loginPass" class="input-field" placeholder="Password"></div>
+                <div class="error-message" id="loginPassErr"></div>
+                <button class="btn" id="doLoginBtn"><i class="fas fa-arrow-right-to-bracket"></i> Access Panel</button>
+                <div class="toggle-text">No account? <span class="toggle-link" id="showSignupLink">Create secure profile</span></div>
+                <div class="toggle-text" style="font-size:0.7rem; opacity:0.6;">demo: demo@bypass.io / Demo@123</div>
+            </div>
+            <div id="signupPanel" class="hidden">
+                <h2><i class="fas fa-user-shield"></i> Create account</h2>
+                <div class="sub-glow">encrypted & private</div>
+                <div class="input-group"><i class="fas fa-user"></i><input type="text" id="signupName" class="input-field" placeholder="Full name"></div>
+                <div class="error-message" id="signupNameErr"></div>
+                <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="signupEmail" class="input-field" placeholder="Email"></div>
+                <div class="error-message" id="signupEmailErr"></div>
+                <div class="input-group"><i class="fas fa-key"></i><input type="password" id="signupPass" class="input-field" placeholder="Password (min 8 chars, 1 upper, 1 number, 1 special)"></div>
+                <div class="error-message" id="signupPassErr"></div>
+                <div class="input-group"><i class="fas fa-check-circle"></i><input type="password" id="signupConfirm" class="input-field" placeholder="Confirm password"></div>
+                <div class="error-message" id="signupConfirmErr"></div>
+                <button class="btn" id="doSignupBtn"><i class="fas fa-lock"></i> Register & Enter</button>
+                <div class="toggle-text">Already member? <span class="toggle-link" id="showLoginLink">Sign in</span></div>
+            </div>
+        </div>
+
+        <!-- DASHBOARD CARD -->
+        <div id="dashboardCard" class="dashboard-card hidden">
+            <div class="dashboard-header">
+                <div><span class="welcome-title"><i class="fas fa-user-astronaut"></i> <span id="dashboardUserName">User</span></span>
+                <p style="font-size:0.8rem; opacity:0.8;"><i class="fas fa-shield-hal"></i> active bypass session</p></div>
+                <button id="logoutBtnDash" class="logout-btn"><i class="fas fa-power-off"></i> Logout</button>
+            </div>
+
+            <!-- THREE MAIN BYPASS SECTIONS: Wifi, Social Media, Saf/Airtel -->
+            <div class="main-bypass-grid">
+                <!-- WiFi bypass -->
+                <div class="bypass-mega-card">
+                    <div class="card-header-main">
+                        <i class="fas fa-wifi"></i>
+                        <h3>WiFi Bypass</h3>
+                    </div>
+                    <div class="sub-buttons" id="wifiBypassGroup">
+                        <div class="bypass-option" data-bypass="dynamic-wifi">
+                            <span><i class="fas fa-sync-alt"></i> Dynamic WiFi</span>
+                        </div>
+                        <div class="bypass-option" data-bypass="prestige-wifi">
+                            <span><i class="fas fa-crown"></i> Prestige WiFi</span>
+                        </div>
+                        <div class="bypass-option" data-bypass="duke-wifi">
+                            <span><i class="fas fa-shield-alt"></i> Duke WiFi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social Media bypass -->
+                <div class="bypass-mega-card">
+                    <div class="card-header-main">
+                        <i class="fas fa-hashtag"></i>
+                        <h3>Social Media Bypass</h3>
+                    </div>
+                    <div class="sub-buttons" id="socialBypassGroup">
+                        <div class="bypass-option" data-bypass="tiktok-bypass">
+                            <span><i class="fab fa-tiktok"></i> TikTok Bypass</span>
+                        </div>
+                        <div class="bypass-option" data-bypass="youtube-bypass">
+                            <span><i class="fab fa-youtube"></i> YouTube Bypass</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Saf/Airtel bypass -->
+                <div class="bypass-mega-card">
+                    <div class="card-header-main">
+                        <i class="fas fa-sim-card"></i>
+                        <h3>Saf/Airtel Bypass</h3>
+                    </div>
+                    <div class="sub-buttons" id="safAirtelGroup">
+                        <div class="bypass-option" data-bypass="saf-capped">
+                            <span><i class="fas fa-database"></i> Saf Capped</span>
+                        </div>
+                        <div class="bypass-option" data-bypass="airtel-capped">
+                            <span><i class="fas fa-charging-station"></i> Airtel Capped</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WhatsApp package integration exactly as described -->
+            <div class="package-whatsapp-area">
+                <div class="package-input-group"><label><i class="fas fa-box"></i> Enter package</label><input type="text" id="packageNameInput" placeholder="e.g., Weekly Turbo, Monthly Lite"></div>
+                <div class="package-input-group"><label><i class="fas fa-credit-card"></i> Payment method</label><select id="paymentMethodSelect"><option value="M-Pesa">M-Pesa</option><option value="Airtel Money">Airtel Money</option><option value="Card">Card</option><option value="Crypto">USDT/Crypto</option></select></div>
+                <div class="package-input-group"><label><i class="fas fa-calendar-week"></i> Days/Week</label><input type="text" id="daysWeekInput" placeholder="7 days / 2 weeks"></div>
+                <button id="whatsappRedirectBtn" class="whatsapp-btn"><i class="fab fa-whatsapp"></i> Order via WhatsApp</button>
+            </div>
+
+            <!-- Activity log -->
+            <div class="activity-log">
+                <div class="log-header"><h4><i class="fas fa-list-ul"></i> Bypass activity log</h4><button id="clearLogBtn" class="clear-log"><i class="fas fa-trash"></i> Clear</button></div>
+                <div id="logList" class="log-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            // ---------- STORAGE & HELPERS ----------
+            const USERS_KEY = 'nexus_bypass_users';
+            const SESSION_KEY = 'nexus_session';
+            const BYPASS_STATES_KEY = 'nexus_bypass_states';
+            const ACTIVITY_LOG_KEY = 'nexus_activity_log';
+
+            function getUsers(){ return JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); }
+            function saveUsers(users){ localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+            function hashPwd(pwd){
+                let hash=0;
+                for(let i=0;i<pwd.length;i++){ hash = ((hash<<5)-hash)+pwd.charCodeAt(i); hash|=0; }
+                return 'nx_'+Math.abs(hash).toString(36)+'_'+btoa(pwd).slice(0,8);
+            }
+            function validateEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+            function validatePasswordStrength(p){
+                if(p.length<8) return 'At least 8 characters';
+                if(!/[A-Z]/.test(p)) return 'One uppercase letter';
+                if(!/[0-9]/.test(p)) return 'One number';
+                if(!/[!@#$%^&*(),.?":{}|<>]/.test(p)) return 'One special character';
+                return null;
+            }
+            function showNotification(msg, type='info'){
+                const container=document.getElementById('notifContainer');
+                const notif=document.createElement('div');
+                notif.className='notification';
+                notif.style.borderLeftColor=type==='success'?'#2ecc71':type==='error'?'#e74c3c':'#f39c12';
+                notif.innerHTML=`<i class="fas ${type==='success'?'fa-check-circle':type==='error'?'fa-exclamation-triangle':'fa-info-circle'}"></i> ${msg}`;
+                container.appendChild(notif);
+                setTimeout(()=>{ notif.remove(); }, 3800);
+            }
+
+            // bypass states
+            let bypassStates = JSON.parse(localStorage.getItem(BYPASS_STATES_KEY) || JSON.stringify({
+                'dynamic-wifi':false,'prestige-wifi':false,'duke-wifi':false,
+                'tiktok-bypass':false,'youtube-bypass':false,
+                'saf-capped':false,'airtel-capped':false
+            }));
+            function persistBypass(){ localStorage.setItem(BYPASS_STATES_KEY, JSON.stringify(bypassStates)); }
+            function updateAllBypassUI(){
+                document.querySelectorAll('.bypass-option').forEach(option=>{
+                    const id = option.getAttribute('data-bypass');
+                    if(id && bypassStates.hasOwnProperty(id)){
+                        const statusSpan = option.querySelector('.option-status');
+                        const isActive = bypassStates[id];
+                        if(statusSpan){
+                            statusSpan.innerText = isActive ? 'Active' : 'Inactive';
+                            statusSpan.className = isActive ? 'option-status' : 'option-status inactive';
+                        }
+                        if(isActive) option.classList.add('active');
+                        else option.classList.remove('active');
+                    }
+                });
+            }
+            function toggleBypass(bypassId, displayName){
+                bypassStates[bypassId] = !bypassStates[bypassId];
+                persistBypass();
+                updateAllBypassUI();
+                const action = bypassStates[bypassId] ? 'activated' : 'deactivated';
+                addActivityLog(`${displayName} ${action}`);
+                showNotification(`${displayName} ${action}`, bypassStates[bypassId] ? 'success' : 'info');
+            }
+
+            // activity log
+            let activityLogs = JSON.parse(localStorage.getItem(ACTIVITY_LOG_KEY) || '[]');
+            function saveLogs(){ localStorage.setItem(ACTIVITY_LOG_KEY, JSON.stringify(activityLogs)); }
+            function addActivityLog(message){
+                const log={ id:Date.now(), text:message, time:new Date().toLocaleTimeString() };
+                activityLogs.unshift(log);
+                if(activityLogs.length>40) activityLogs.pop();
+                saveLogs();
+                renderLogs();
+            }
+            function renderLogs(){
+                const container=document.getElementById('logList');
+                if(!container) return;
+                if(activityLogs.length===0){ container.innerHTML='<div class="log-item"><i class="fas fa-info-circle"></i><span>No activity yet</span><span class="log-time">--:--</span></div>'; return; }
+                container.innerHTML=activityLogs.slice(0,25).map(l=>`<div class="log-item"><i class="fas ${l.text.includes('activated')?'fa-toggle-on':'fa-exchange-alt'}" style="color:${l.text.includes('activated')?'#6bffb8':'#ffaa88'}"></i><span>${l.text}</span><span class="log-time">${l.time}</span></div>`).join('');
+            }
+            function clearLogs(){ activityLogs=[]; saveLogs(); renderLogs(); showNotification('Activity log cleared','info'); }
+
+            // session
+            function getSession(){ const s=sessionStorage.getItem(SESSION_KEY); return s?JSON.parse(s):null; }
+            function setSession(user){ sessionStorage.setItem(SESSION_KEY, JSON.stringify({ id:user.id, name:user.name, email:user.email, loginAt:Date.now() })); }
+            function clearSession(){ sessionStorage.removeItem(SESSION_KEY); }
+
+            // auth
+            function findUserByEmail(email){ return getUsers().find(u=>u.email.toLowerCase()===email.toLowerCase()); }
+            function registerUser(name, email, password){
+                const users=getUsers();
+                if(findUserByEmail(email)) throw new Error('Email already exists');
+                const pwdError=validatePasswordStrength(password);
+                if(pwdError) throw new Error(pwdError);
+                const newUser={ id:Date.now(), name, email:email.toLowerCase(), password:hashPwd(password), createdAt:new Date().toISOString() };
+                users.push(newUser);
+                saveUsers(users);
+                return { id:newUser.id, name:newUser.name, email:newUser.email };
+            }
+            function loginUser(email, password){
+                const user=findUserByEmail(email);
+                if(!user || user.password!==hashPwd(password)) throw new Error('Invalid email or password');
+                return { id:user.id, name:user.name, email:user.email };
+            }
+            // seed demo
+            if(!findUserByEmail('demo@bypass.io')){
+                const users=getUsers();
+                users.push({ id:1, name:'Demo User', email:'demo@bypass.io', password:hashPwd('Demo@123'), createdAt:new Date().toISOString() });
+                saveUsers(users);
+            }
+
+            // DOM elements
+            const authCard=document.getElementById('authCard'), dashCard=document.getElementById('dashboardCard');
+            const loginPanel=document.getElementById('loginPanel'), signupPanel=document.getElementById('signupPanel');
+            const showSignup=document.getElementById('showSignupLink'), showLogin=document.getElementById('showLoginLink');
+            const loginBtn=document.getElementById('doLoginBtn'), signupBtn=document.getElementById('doSignupBtn');
+            const logoutDash=document.getElementById('logoutBtnDash');
+            const dashboardUserName=document.getElementById('dashboardUserName');
+            const whatsappBtn=document.getElementById('whatsappRedirectBtn');
+
+            function switchToLogin(){ loginPanel.classList.remove('hidden'); signupPanel.classList.add('hidden'); clearAuthErrors(); }
+            function switchToSignup(){ loginPanel.classList.add('hidden'); signupPanel.classList.remove('hidden'); clearAuthErrors(); }
+            function clearAuthErrors(){
+                document.querySelectorAll('#authCard .error-message').forEach(el=>el.innerText='');
+                document.querySelectorAll('#authCard .input-field').forEach(el=>el.classList.remove('input-error'));
+            }
+            function showDashboardUI(userName){
+                authCard.classList.add('hidden');
+                dashCard.classList.remove('hidden');
+                dashboardUserName.innerText=userName;
+                updateAllBypassUI();
+                renderLogs();
+                addActivityLog(`Dashboard opened — welcome ${userName}`);
+            }
+            function showAuthScreen(){
+                authCard.classList.remove('hidden');
+                dashCard.classList.add('hidden');
+                switchToLogin();
+                document.getElementById('loginEmail').value='';
+                document.getElementById('loginPass').value='';
+            }
+
+            function handleLogin(){
+                const email=document.getElementById('loginEmail').value.trim();
+                const pwd=document.getElementById('loginPass').value;
+                let hasErr=false;
+                if(!email){ document.getElementById('loginEmailErr').innerText='Email required'; hasErr=true; }
+                else if(!validateEmail(email)){ document.getElementById('loginEmailErr').innerText='Invalid email'; hasErr=true; }
+                else document.getElementById('loginEmailErr').innerText='';
+                if(!pwd){ document.getElementById('loginPassErr').innerText='Password required'; hasErr=true; }
+                else document.getElementById('loginPassErr').innerText='';
+                if(hasErr) return;
+                try{
+                    const user=loginUser(email,pwd);
+                    setSession(user);
+                    showDashboardUI(user.name);
+                    addActivityLog(`Login success: ${user.email}`);
+                    showNotification(`Welcome back, ${user.name}`, 'success');
+                }catch(e){ showNotification(e.message,'error'); document.getElementById('loginPassErr').innerText=e.message; }
+            }
+            function handleSignup(){
+                const name=document.getElementById('signupName').value.trim();
+                const email=document.getElementById('signupEmail').value.trim();
+                const pwd=document.getElementById('signupPass').value;
+                const confirm=document.getElementById('signupConfirm').value;
+                let valid=true;
+                if(!name){ document.getElementById('signupNameErr').innerText='Name required'; valid=false; } else document.getElementById('signupNameErr').innerText='';
+                if(!email || !validateEmail(email)){ document.getElementById('signupEmailErr').innerText='Valid email required'; valid=false; } else document.getElementById('signupEmailErr').innerText='';
+                const pwdMsg=validatePasswordStrength(pwd);
+                if(pwdMsg){ document.getElementById('signupPassErr').innerText=pwdMsg; valid=false; } else document.getElementById('signupPassErr').innerText='';
+                if(pwd!==confirm){ document.getElementById('signupConfirmErr').innerText='Passwords mismatch'; valid=false; } else document.getElementById('signupConfirmErr').innerText='';
+                if(!valid) return;
+                try{
+                    const newUser=registerUser(name,email,pwd);
+                    setSession(newUser);
+                    showDashboardUI(newUser.name);
+                    addActivityLog(`Account created: ${newUser.email}`);
+                    showNotification(`Account created! Welcome ${newUser.name}`, 'success');
+                }catch(err){ showNotification(err.message,'error'); }
+            }
+            function handleLogout(){ clearSession(); showAuthScreen(); showNotification('Logged out securely','info'); }
+            function sendWhatsappOrder(){
+                const packageVal=document.getElementById('packageNameInput').value.trim();
+                const payment=document.getElementById('paymentMethodSelect').value;
+                const days=document.getElementById('daysWeekInput').value.trim();
+                if(!packageVal && !days){
+                    showNotification('Please enter at least package name or duration', 'error');
+                    return;
+                }
+                const session=getSession();
+                const userInfo=session?session.name:'Guest';
+                const message = `🔹 *NEW BYPASS ORDER* 🔹%0A👤 User: ${userInfo}%0A📦 Package: ${packageVal || 'Not specified'}%0A💰 Payment: ${payment}%0A📅 Duration: ${days || 'Not set'}%0A🛡️ Bypass panel request — NEXUS SECURE`;
+                const whatsappNumber = '+584265907014';
+                const url = `https://wa.me/${whatsappNumber}?text=${message}`;
+                window.open(url, '_blank');
+                addActivityLog(`WhatsApp order → Package: ${packageVal}, ${payment}, ${days}`);
+                showNotification('Redirecting to WhatsApp...', 'success');
+            }
+
+            // attach bypass handlers dynamically
+            function attachBypassEvents(){
+                document.querySelectorAll('.bypass-option').forEach(opt => {
+                    opt.removeEventListener('click', bypassHandler);
+                    opt.addEventListener('click', bypassHandler);
+                });
+            }
+            function bypassHandler(e){
+                const targetEl = e.currentTarget;
+                const id = targetEl.getAttribute('data-bypass');
+                const displayMap = {
+                    'dynamic-wifi':'Dynamic WiFi','prestige-wifi':'Prestige WiFi','duke-wifi':'Duke WiFi',
+                    'tiktok-bypass':'TikTok Bypass','youtube-bypass':'YouTube Bypass',
+                    'saf-capped':'Saf Capped','airtel-capped':'Airtel Capped'
+                };
+                if(id && displayMap[id]) toggleBypass(id, displayMap[id]);
+            }
+
+            function init(){
+                attachBypassEvents();
+                loginBtn.onclick=handleLogin;
+                signupBtn.onclick=handleSignup;
+                showSignup.onclick=switchToSignup;
+                showLogin.onclick=switchToLogin;
+                logoutDash.onclick=handleLogout;
+                whatsappBtn.onclick=sendWhatsappOrder;
+                document.getElementById('clearLogBtn').onclick=clearLogs;
+                const session=getSession();
+                if(session) showDashboardUI(session.name);
+                else showAuthScreen();
+            }
+            init();
+        })();
+    </script>
+</body>
+</html>
