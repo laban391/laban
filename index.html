@@ -305,7 +305,7 @@
             <div id="signupPanel" class="hidden"><h2><i class="fas fa-user-shield"></i> Create account</h2>
                 <div class="input-group"><i class="fas fa-user"></i><input type="text" id="signupName" class="input-field" placeholder="Full name"></div><div class="error-message" id="signupNameErr"></div>
                 <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="signupEmail" class="input-field" placeholder="Email"></div><div class="error-message" id="signupEmailErr"></div>
-                <div class="input-group"><i class="fas fa-key"></i><input type="password" id="signupPass" class="input-field" placeholder="Password (8+ chars, 1 upper, 1 number, 1 special)"></div><div class="error-message" id="signupPassErr"></div>
+                <div class="input-group"><i class="fas fa-key"></i><input type="password" id="signupPass" class="input-field" placeholder="Password (minimum 8 characters)"></div><div class="error-message" id="signupPassErr"></div>
                 <div class="input-group"><i class="fas fa-check-circle"></i><input type="password" id="signupConfirm" class="input-field" placeholder="Confirm password"></div><div class="error-message" id="signupConfirmErr"></div>
                 <button class="btn" id="doSignupBtn"><i class="fas fa-lock"></i> Register</button>
                 <div class="toggle-text">Already member? <span class="toggle-link" id="showLoginLink">Sign in</span></div>
@@ -373,7 +373,16 @@
             function hashPwd(p){ let h=0; for(let i=0;i<p.length;i++){ h=((h<<5)-h)+p.charCodeAt(i); h|=0; } return 'nx_'+Math.abs(h).toString(36); }
             function validateEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
             function findUser(email){ return getUsers().find(u=>u.email.toLowerCase()===email.toLowerCase()); }
-            function register(name,email,pass){ if(findUser(email)) throw new Error('Email exists'); if(pass.length<8||!/[A-Z]/.test(pass)||!/[0-9]/.test(pass)||!/[!@#$%^&*]/.test(pass)) throw new Error('Weak password'); const user={id:Date.now(),name,email:email.toLowerCase(),password:hashPwd(pass)}; const users=getUsers(); users.push(user); saveUsers(users); return user; }
+            // Password validation: only minimum 8 characters required
+            function register(name,email,pass){ 
+                if(findUser(email)) throw new Error('Email exists'); 
+                if(pass.length < 8) throw new Error('Password must be at least 8 characters'); 
+                const user={id:Date.now(),name,email:email.toLowerCase(),password:hashPwd(pass)}; 
+                const users=getUsers(); 
+                users.push(user); 
+                saveUsers(users); 
+                return user; 
+            }
             function login(email,pass){ const u=findUser(email); if(!u||u.password!==hashPwd(pass)) throw new Error('Invalid'); return u; }
             if(!findUser('demo@bypass.io')){ const u=getUsers(); u.push({id:1,name:'Demo User',email:'demo@bypass.io',password:hashPwd('Demo@123')}); saveUsers(u); }
             const SESSION_KEY='nexus_session';
