@@ -205,7 +205,7 @@
         .package-price { 
             font-size: 1.3rem; 
             font-weight: bold; 
-            color: #c084fc;  /* Purple color */
+            color: #c084fc;
             text-shadow: 0 0 5px rgba(192, 132, 252, 0.3);
         }
 
@@ -221,7 +221,6 @@
             color: white;
         }
         
-        /* Total amount label stays white, only the number value is purple */
         .total-section span:first-child {
             color: white;
         }
@@ -251,10 +250,24 @@
         .card-header-main i { font-size: 1.8rem; color: #ffcd7e; }
         .card-header-main h3 { font-size: 1.3rem; color: white; }
         .sub-buttons { display: flex; flex-wrap: wrap; gap: 0.8rem; padding: 1.2rem 1.8rem; }
-        .bypass-option { flex: 1; min-width: 160px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,200,120,0.4); border-radius: 60px; padding: 0.8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; color: white; }
-        .bypass-option:hover { background: rgba(249,115,22,0.2); border-color: #ffa559; }
-        .option-status { font-size: 0.7rem; padding: 0.2rem 0.8rem; border-radius: 40px; background: #00c48c20; color: #6effc0; border: 1px solid #6effc066; }
-        .option-status.inactive { background: #ff6b6b20; color: #ffa7a7; border-color: #ff6b6b66; }
+        .bypass-option { 
+            flex: 1; 
+            min-width: 160px; 
+            background: rgba(0,0,0,0.35); 
+            border: 1px solid rgba(255,200,120,0.4); 
+            border-radius: 60px; 
+            padding: 0.8rem 1.2rem; 
+            display: flex; 
+            justify-content: center;
+            align-items: center; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            color: white;
+            text-align: center;
+            gap: 10px;
+        }
+        .bypass-option i { font-size: 1rem; }
+        .bypass-option:hover { background: rgba(249,115,22,0.2); border-color: #ffa559; transform: translateX(5px); }
         .hidden { display: none !important; }
         .notification { position: fixed; top: 20px; right: 20px; z-index: 2000; background: #0f172ad9; backdrop-filter: blur(12px); padding: 0.9rem 1.5rem; border-radius: 50px; border-left: 5px solid; color: white; animation: slideNotif 0.25s ease; }
         @keyframes slideNotif { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -305,20 +318,26 @@
                 <button id="logoutBtnDash" class="logout-btn"><i class="fas fa-power-off"></i> Logout</button>
             </div>
 
-            <!-- 3 main bypass categories -->
+            <!-- 3 main bypass categories - NO ACTIVE/INACTIVE BADGES -->
             <div class="main-bypass-grid">
                 <div class="bypass-mega-card"><div class="card-header-main"><i class="fas fa-wifi"></i><h3>WiFi Bypass</h3></div>
-                <div class="sub-buttons"><div class="bypass-option" data-bypass="dynamic-wifi" data-category="WiFi"><span><i class="fas fa-sync-alt"></i> Dynamic WiFi</div>
-                <div class="bypass-option" data-bypass="prestige-wifi" data-category="WiFi"><span><i class="fas fa-crown"></i> Prestige WiFi</div>
-                <div class="bypass-option" data-bypass="duke-wifi" data-category="WiFi"><span><i class="fas fa-shield-alt"></i> Duke WiFi</div>
+                <div class="sub-buttons">
+                    <div class="bypass-option" data-bypass="dynamic-wifi" data-category="WiFi"><i class="fas fa-sync-alt"></i> Dynamic WiFi</div>
+                    <div class="bypass-option" data-bypass="prestige-wifi" data-category="WiFi"><i class="fas fa-crown"></i> Prestige WiFi</div>
+                    <div class="bypass-option" data-bypass="duke-wifi" data-category="WiFi"><i class="fas fa-shield-alt"></i> Duke WiFi</div>
+                </div></div>
 
                 <div class="bypass-mega-card"><div class="card-header-main"><i class="fas fa-hashtag"></i><h3>Social Media Bypass</h3></div>
-                <div class="sub-buttons"><div class="bypass-option" data-bypass="tiktok-bypass" data-category="Social"><span><i class="fab fa-tiktok"></i> TikTok Bypass</div>
-                <div class="bypass-option" data-bypass="youtube-bypass" data-category="Social"><span><i class="fab fa-youtube"></i> YouTube Bypass</div>
+                <div class="sub-buttons">
+                    <div class="bypass-option" data-bypass="tiktok-bypass" data-category="Social"><i class="fab fa-tiktok"></i> TikTok Bypass</div>
+                    <div class="bypass-option" data-bypass="youtube-bypass" data-category="Social"><i class="fab fa-youtube"></i> YouTube Bypass</div>
+                </div></div>
 
                 <div class="bypass-mega-card"><div class="card-header-main"><i class="fas fa-sim-card"></i><h3>Saf/Airtel Bypass</h3></div>
-                <div class="sub-buttons"><div class="bypass-option" data-bypass="saf-capped" data-category="SafAirtel"><span><i class="fas fa-database"></i> Saf Capped</div>
-                <div class="bypass-option" data-bypass="airtel-capped" data-category="SafAirtel"><span><i class="fas fa-charging-station"></i> Airtel Capped</div>
+                <div class="sub-buttons">
+                    <div class="bypass-option" data-bypass="saf-capped" data-category="SafAirtel"><i class="fas fa-database"></i> Saf Capped</div>
+                    <div class="bypass-option" data-bypass="airtel-capped" data-category="SafAirtel"><i class="fas fa-charging-station"></i> Airtel Capped</div>
+                </div></div>
             </div>
 
             <div class="package-whatsapp-area">
@@ -347,7 +366,7 @@
 
     <script>
         (function(){
-            // ---------- SIMPLE AUTH (preserved from earlier, minimal) ----------
+            // ---------- SIMPLE AUTH ----------
             const USERS_KEY = 'nexus_users';
             function getUsers(){ return JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); }
             function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
@@ -378,12 +397,10 @@
             function escapeHtml(s){ return s.replace(/[&<>]/g,function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
             function showNotification(msg,type){ const c=document.getElementById('notifContainer'); const n=document.createElement('div'); n.className='notification'; n.style.borderLeftColor=type==='success'?'#2ecc71':type==='error'?'#e74c3c':'#f39c12'; n.innerHTML=`<i class="fas ${type==='success'?'fa-check-circle':'fa-info-circle'}"></i> ${msg}`; c.appendChild(n); setTimeout(()=>n.remove(),3500); }
 
-            // Bypass states (UI only for demo, but we'll keep)
+            // Bypass states (keep for activation tracking but no UI badges)
             let bypassStates = JSON.parse(localStorage.getItem('bypass_states') || '{"dynamic-wifi":false,"prestige-wifi":false,"duke-wifi":false,"tiktok-bypass":false,"youtube-bypass":false,"saf-capped":false,"airtel-capped":false}');
-            function updateBypassUI(){ document.querySelectorAll('.bypass-option').forEach(opt=>{ const id=opt.getAttribute('data-bypass'); const active=bypassStates[id]; const span=opt.querySelector('.option-status'); if(span){ span.innerText=active?'Active':'Inactive'; span.className=active?'option-status':'option-status inactive'; } if(active) opt.classList.add('active'); else opt.classList.remove('active'); }); }
             
             // ---------- PACKAGE PRICING IN KENYAN SHILLINGS (KSh) ----------
-            // 1 day = KSh 20, 3 days = KSh 50, 7 days (1 week) = KSh 100, 30 days = KSh 350
             const PACKAGES = [
                 { id: '1day', name: '1 Day Pass', days: 1, price: 20, currency: 'KSh' },
                 { id: '3days', name: '3 Days Pass', days: 3, price: 50, currency: 'KSh' },
@@ -393,12 +410,8 @@
             let currentSelectedPackage = null;
             let currentBypassContext = { name: '', category: '', bypassId: '' };
 
-            // Format price with KSh
-            function formatPrice(price) {
-                return `KSh ${price}`;
-            }
+            function formatPrice(price) { return `KSh ${price}`; }
 
-            // Render package modal
             function showPaymentModal(bypassName, bypassId, category){
                 currentBypassContext = { name: bypassName, bypassId: bypassId, category: category };
                 const modal = document.getElementById('paymentModal');
@@ -429,7 +442,6 @@
 
             function closeModal(){ document.getElementById('paymentModal').classList.remove('active'); }
 
-            // Handle checkout: send WhatsApp order with package details
             function handleCheckout(){
                 if(!currentSelectedPackage){
                     showNotification('Please select a package first', 'error');
@@ -442,17 +454,15 @@
                 const whatsappNumber = '+584265907014';
                 const url = `https://wa.me/${whatsappNumber}?text=${message}`;
                 window.open(url, '_blank');
-                // Activate bypass after order
+                // Activate bypass after order (store state but no UI badge)
                 bypassStates[currentBypassContext.bypassId] = true;
                 localStorage.setItem('bypass_states', JSON.stringify(bypassStates));
-                updateBypassUI();
                 addLog(`✅ ORDER PLACED: ${currentBypassContext.name} - ${currentSelectedPackage.name} (${formatPrice(currentSelectedPackage.price)})`);
                 showNotification(`Package purchased! ${currentBypassContext.name} activated.`, 'success');
                 closeModal();
                 currentSelectedPackage = null;
             }
 
-            // Event binding for bypass buttons -> open payment modal
             function attachBypassPurchaseEvents(){
                 document.querySelectorAll('.bypass-option').forEach(opt => {
                     opt.removeEventListener('click', purchaseHandler);
@@ -463,7 +473,7 @@
                 e.stopPropagation();
                 const target = e.currentTarget;
                 const bypassId = target.getAttribute('data-bypass');
-                const bypassName = target.querySelector('span:first-child')?.innerText.trim() || bypassId;
+                const bypassName = target.innerText.trim() || bypassId;
                 const category = target.getAttribute('data-category') || 'Bypass';
                 showPaymentModal(bypassName, bypassId, category);
             }
@@ -473,7 +483,6 @@
                 authCard.classList.add('hidden');
                 dashCard.classList.remove('hidden');
                 dashboardUserName.innerText = name;
-                updateBypassUI();
                 renderLogs();
                 addLog(`Dashboard opened — ${name}`);
             }
@@ -507,7 +516,6 @@
             }
             function clearLogs(){ activityLogs=[]; localStorage.setItem('nexus_activity',JSON.stringify([])); renderLogs(); showNotification('Logs cleared','info'); }
 
-            // initial event binding
             function init(){
                 loginBtn.onclick=handleLogin; signupBtn.onclick=handleSignup;
                 showSignup.onclick=()=>{ loginPanel.classList.add('hidden'); signupPanel.classList.remove('hidden'); };
