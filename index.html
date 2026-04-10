@@ -94,6 +94,48 @@
         .dashboard-card::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 8px; }
         .dashboard-card::-webkit-scrollbar-thumb { background: #f9731680; border-radius: 8px; }
 
+        /* Loading State */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(2, 6, 23, 0.95);
+            backdrop-filter: blur(12px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top-color: #ffcd7e;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         /* MODAL - Payment Page */
         .modal-overlay {
             position: fixed;
@@ -377,20 +419,6 @@
             margin: 1.5rem 0;
             color: rgba(255, 255, 255, 0.9);
         }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
@@ -402,6 +430,14 @@
         <div class="glow-orb orb5"></div>
     </div>
     <div id="notifContainer"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Signing you in...</p>
+        </div>
+    </div>
 
     <div class="app-container">
         <!-- Google Sign-In Page -->
@@ -534,8 +570,24 @@
     <script src="https://js.paystack.co/v1/inline.js"></script>
     
     <script>
+        // Global app state
+        let appReady = false;
+        let pendingUserData = null;
+        
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            appReady = true;
+            if (pendingUserData) {
+                processGoogleSignIn(pendingUserData);
+                pendingUserData = null;
+            }
+        });
+        
         // Google Sign-In callback function (must be global)
         function handleGoogleSignIn(response) {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.add('active');
+            
             // Decode the JWT token to get user info
             const responsePayload = decodeJwtResponse(response.credential);
             
@@ -547,6 +599,14 @@
                 emailVerified: responsePayload.email_verified
             };
             
+            if (appReady) {
+                processGoogleSignIn(userData);
+            } else {
+                pendingUserData = userData;
+            }
+        }
+        
+        function processGoogleSignIn(userData) {
             // Store user in localStorage
             const users = JSON.parse(localStorage.getItem('nexus_google_users') || '[]');
             const existingUser = users.find(u => u.email === userData.email);
@@ -557,15 +617,24 @@
                     registeredAt: new Date().toISOString()
                 });
                 localStorage.setItem('nexus_google_users', JSON.stringify(users));
-                addLogToStorage(`New Google Sign-In: ${userData.email}`);
             }
             
             // Set session
             sessionStorage.setItem('nexus_session', JSON.stringify(userData));
             
-            // Show dashboard
+            // Hide loading overlay
+            document.getElementById('loadingOverlay').classList.remove('active');
+            
+            // Show dashboard immediately
             showDashboardUI(userData);
             showNotification(`Welcome ${userData.name}!`, 'success');
+            
+            // Add log
+            setTimeout(() => {
+                if (typeof addLogToStorage === 'function') {
+                    addLogToStorage(`Google Sign-In successful: ${userData.email}`);
+                }
+            }, 100);
         }
         
         // Helper function to decode JWT
@@ -582,7 +651,7 @@
             // Activity log functions
             let activityLogs = JSON.parse(localStorage.getItem('nexus_activity') || '[]');
             
-            function addLogToStorage(msg) {
+            window.addLogToStorage = function(msg) {
                 const log = {
                     id: Date.now(),
                     text: msg,
@@ -592,7 +661,7 @@
                 if (activityLogs.length > 30) activityLogs.pop();
                 localStorage.setItem('nexus_activity', JSON.stringify(activityLogs));
                 renderLogs();
-            }
+            };
             
             function renderLogs() {
                 const logContainer = document.getElementById('logList');
@@ -619,7 +688,7 @@
                 });
             }
             
-            function showNotification(msg, type) {
+            window.showNotification = function(msg, type) {
                 const c = document.getElementById('notifContainer');
                 const n = document.createElement('div');
                 n.className = 'notification';
@@ -627,7 +696,7 @@
                 n.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i> ${msg}`;
                 c.appendChild(n);
                 setTimeout(() => n.remove(), 3500);
-            }
+            };
 
             // Dashboard UI functions
             const authCard = document.getElementById('authCard');
@@ -638,16 +707,19 @@
             const logoutDash = document.getElementById('logoutBtnDash');
             const clearLogBtn = document.getElementById('clearLogBtn');
             
-            function showDashboardUI(userData) {
+            window.showDashboardUI = function(userData) {
+                // Immediately switch views
                 authCard.classList.add('hidden');
                 dashCard.classList.remove('hidden');
+                
+                // Update user info
                 dashboardUserName.innerText = userData.name;
                 userEmail.innerText = userData.email;
                 userAvatar.src = userData.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(userData.name) + '&background=ffcd7e&color=0a0f1f';
                 
                 renderLogs();
                 addLogToStorage(`Dashboard opened — ${userData.name} (${userData.email})`);
-            }
+            };
             
             function showAuth() {
                 authCard.classList.remove('hidden');
@@ -740,7 +812,7 @@
                 const userName = session.name || 'Guest User';
                 
                 const handler = PaystackPop.setup({
-                    key: 'pk_live_16142fe1295bff6eab1ec0888895754f8e90a96b', // Replace with your Paystack public key
+                    key: 'pk_test_xxxxxxxxxxxxxxxxxxxxxxxx', // Replace with your Paystack public key
                     email: userEmail,
                     amount: currentSelectedPackage.price * 100,
                     currency: 'KES',
