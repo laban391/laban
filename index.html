@@ -6,6 +6,8 @@
     <title>NEXUS BYPASS · Premium Packages</title>
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -157,7 +159,10 @@
 
         .close-modal:hover { color: #ff6b6b; transform: scale(1.1); }
 
-        .modal-body { padding: 1.8rem; }
+        .modal-body { 
+            padding: 1.8rem; 
+            text-align: center;
+        }
 
         .package-list {
             display: flex;
@@ -201,7 +206,6 @@
             color: #cccccc;
         }
         
-        /* Package price text color PURPLE with KSH currency */
         .package-price { 
             font-size: 1.3rem; 
             font-weight: bold; 
@@ -230,7 +234,14 @@
             font-weight: bold;
         }
 
-        .checkout-btn {
+        /* Payment Buttons */
+        .payment-description {
+            color: #cccccc;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .pay-button {
             width: 100%;
             background: linear-gradient(105deg, #25d366, #128c7e);
             border: none;
@@ -241,9 +252,70 @@
             color: white;
             cursor: pointer;
             transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
-        .checkout-btn:hover { transform: scale(1.02); box-shadow: 0 0 20px #25d366aa; }
+        .pay-button:hover { 
+            transform: scale(1.02); 
+            box-shadow: 0 0 20px #25d366aa; 
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            margin: 1.5rem 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .divider span {
+            padding: 0 10px;
+            font-size: 0.9rem;
+        }
+
+        .alternative-payments {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .alt-pay-button {
+            flex: 1;
+            padding: 0.8rem;
+            border-radius: 60px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .alt-pay-button.paypal {
+            background: linear-gradient(105deg, #003087, #009cde);
+            color: white;
+        }
+
+        .alt-pay-button.stripe {
+            background: linear-gradient(105deg, #635bff, #00d4ff);
+            color: white;
+        }
+
+        .alt-pay-button:hover {
+            transform: scale(1.02);
+            opacity: 0.9;
+        }
 
         .bypass-mega-card { margin-bottom: 1.5rem; background: rgba(20, 30, 50, 0.5); border-radius: 2rem; border: 1px solid rgba(255,200,150,0.3); overflow: hidden; }
         .card-header-main { background: rgba(0, 0, 0, 0.3); padding: 1rem 1.8rem; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid rgba(255,215,150,0.3); }
@@ -287,26 +359,92 @@
         .clear-log { background: #ff5f5f20; border: 1px solid #ff8a8a; border-radius: 30px; padding: 0.3rem 1rem; color: #ffb3b3; cursor: pointer; }
         .welcome-title { color: white; font-size: 1.5rem; }
         .sub-glow { color: rgba(255,245,210,0.8); }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .toggle-text {
+            text-align: center;
+            margin-top: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        h2 {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
     </style>
 </head>
 <body>
-    <div class="lighting-bg"><div class="glow-orb orb1"></div><div class="glow-orb orb2"></div><div class="glow-orb orb3"></div><div class="glow-orb orb4"></div><div class="glow-orb orb5"></div></div>
+    <div class="lighting-bg">
+        <div class="glow-orb orb1"></div>
+        <div class="glow-orb orb2"></div>
+        <div class="glow-orb orb3"></div>
+        <div class="glow-orb orb4"></div>
+        <div class="glow-orb orb5"></div>
+    </div>
     <div id="notifContainer"></div>
 
     <div class="app-container">
         <div id="authCard" class="glass-card">
-            <div id="loginPanel"><h2><i class="fas fa-bolt"></i> NEXUS BYPASS</h2><div class="sub-glow">secure authentication</div>
-                <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="loginEmail" class="input-field" placeholder="Email"></div><div class="error-message" id="loginEmailErr"></div>
-                <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="loginPass" class="input-field" placeholder="Password"></div><div class="error-message" id="loginPassErr"></div>
+            <div id="loginPanel">
+                <h2><i class="fas fa-bolt"></i> NEXUS BYPASS</h2>
+                <div class="sub-glow">secure authentication</div>
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="loginEmail" class="input-field" placeholder="Email">
+                </div>
+                <div class="error-message" id="loginEmailErr"></div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="loginPass" class="input-field" placeholder="Password">
+                </div>
+                <div class="error-message" id="loginPassErr"></div>
                 <button class="btn" id="doLoginBtn"><i class="fas fa-arrow-right-to-bracket"></i> Access Panel</button>
                 <div class="toggle-text">No account? <span class="toggle-link" id="showSignupLink">Create account</span></div>
                 <div style="font-size:0.7rem; opacity:0.6; text-align:center; margin-top:1rem;">demo: demo@bypass.io / Demo@123</div>
             </div>
-            <div id="signupPanel" class="hidden"><h2><i class="fas fa-user-shield"></i> Create account</h2>
-                <div class="input-group"><i class="fas fa-user"></i><input type="text" id="signupName" class="input-field" placeholder="Full name"></div><div class="error-message" id="signupNameErr"></div>
-                <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="signupEmail" class="input-field" placeholder="Email"></div><div class="error-message" id="signupEmailErr"></div>
-                <div class="input-group"><i class="fas fa-key"></i><input type="password" id="signupPass" class="input-field" placeholder="Password (minimum 8 characters)"></div><div class="error-message" id="signupPassErr"></div>
-                <div class="input-group"><i class="fas fa-check-circle"></i><input type="password" id="signupConfirm" class="input-field" placeholder="Confirm password"></div><div class="error-message" id="signupConfirmErr"></div>
+            <div id="signupPanel" class="hidden">
+                <h2><i class="fas fa-user-shield"></i> Create account</h2>
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="signupName" class="input-field" placeholder="Full name">
+                </div>
+                <div class="error-message" id="signupNameErr"></div>
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="signupEmail" class="input-field" placeholder="Email">
+                </div>
+                <div class="error-message" id="signupEmailErr"></div>
+                <div class="input-group">
+                    <i class="fas fa-key"></i>
+                    <input type="password" id="signupPass" class="input-field" placeholder="Password (minimum 8 characters)">
+                </div>
+                <div class="error-message" id="signupPassErr"></div>
+                <div class="input-group">
+                    <i class="fas fa-check-circle"></i>
+                    <input type="password" id="signupConfirm" class="input-field" placeholder="Confirm password">
+                </div>
+                <div class="error-message" id="signupConfirmErr"></div>
                 <button class="btn" id="doSignupBtn"><i class="fas fa-lock"></i> Register</button>
                 <div class="toggle-text">Already member? <span class="toggle-link" id="showLoginLink">Sign in</span></div>
             </div>
@@ -314,56 +452,90 @@
 
         <div id="dashboardCard" class="dashboard-card hidden">
             <div class="dashboard-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
-                <div><span class="welcome-title"><i class="fas fa-user-astronaut"></i> <span id="dashboardUserName">User</span></span><p style="font-size:0.8rem; opacity:0.8;"><i class="fas fa-shield-hal"></i> active session</p></div>
+                <div>
+                    <span class="welcome-title"><i class="fas fa-user-astronaut"></i> <span id="dashboardUserName">User</span></span>
+                    <p style="font-size:0.8rem; opacity:0.8;"><i class="fas fa-shield-hal"></i> active session</p>
+                </div>
                 <button id="logoutBtnDash" class="logout-btn"><i class="fas fa-power-off"></i> Logout</button>
             </div>
 
-            <!-- 3 main bypass categories - NO ACTIVE/INACTIVE BADGES -->
             <div class="main-bypass-grid">
-                <div class="bypass-mega-card"><div class="card-header-main"><i class="fas fa-wifi"></i><h3>WiFi Bypass</h3></div>
-                <div class="sub-buttons">
-                    <div class="bypass-option" data-bypass="dynamic-wifi" data-category="WiFi"><i class="fas fa-sync-alt"></i> Dynamic WiFi</div>
-                    <div class="bypass-option" data-bypass="prestige-wifi" data-category="WiFi"><i class="fas fa-crown"></i> Prestige WiFi</div>
-                    <div class="bypass-option" data-bypass="duke-wifi" data-category="WiFi"><i class="fas fa-shield-alt"></i> Duke WiFi</div>
-                </div></div>
+                <div class="bypass-mega-card">
+                    <div class="card-header-main"><i class="fas fa-wifi"></i><h3>WiFi Bypass</h3></div>
+                    <div class="sub-buttons">
+                        <div class="bypass-option" data-bypass="dynamic-wifi" data-category="WiFi"><i class="fas fa-sync-alt"></i> Dynamic WiFi</div>
+                        <div class="bypass-option" data-bypass="prestige-wifi" data-category="WiFi"><i class="fas fa-crown"></i> Prestige WiFi</div>
+                        <div class="bypass-option" data-bypass="duke-wifi" data-category="WiFi"><i class="fas fa-shield-alt"></i> Duke WiFi</div>
+                    </div>
+                </div>
 
-                <div class="bypass-mega-card"><div class="card-header-main"><i class="fas fa-hashtag"></i><h3>Social Media Bypass</h3></div>
-                <div class="sub-buttons">
-                    <div class="bypass-option" data-bypass="tiktok-bypass" data-category="Social"><i class="fab fa-tiktok"></i> TikTok Bypass</div>
-                    <div class="bypass-option" data-bypass="youtube-bypass" data-category="Social"><i class="fab fa-youtube"></i> YouTube Bypass</div>
-                </div></div>
+                <div class="bypass-mega-card">
+                    <div class="card-header-main"><i class="fas fa-hashtag"></i><h3>Social Media Bypass</h3></div>
+                    <div class="sub-buttons">
+                        <div class="bypass-option" data-bypass="tiktok-bypass" data-category="Social"><i class="fab fa-tiktok"></i> TikTok Bypass</div>
+                        <div class="bypass-option" data-bypass="youtube-bypass" data-category="Social"><i class="fab fa-youtube"></i> YouTube Bypass</div>
+                    </div>
+                </div>
 
-                <div class="bypass-mega-card"><div class="card-header-main"><i class="fas fa-sim-card"></i><h3>Saf/Airtel Bypass</h3></div>
-                <div class="sub-buttons">
-                    <div class="bypass-option" data-bypass="saf-capped" data-category="SafAirtel"><i class="fas fa-database"></i> Saf Capped</div>
-                    <div class="bypass-option" data-bypass="airtel-capped" data-category="SafAirtel"><i class="fas fa-charging-station"></i> Airtel Capped</div>
-                </div></div>
+                <div class="bypass-mega-card">
+                    <div class="card-header-main"><i class="fas fa-sim-card"></i><h3>Saf/Airtel Bypass</h3></div>
+                    <div class="sub-buttons">
+                        <div class="bypass-option" data-bypass="saf-capped" data-category="SafAirtel"><i class="fas fa-database"></i> Saf Capped</div>
+                        <div class="bypass-option" data-bypass="airtel-capped" data-category="SafAirtel"><i class="fas fa-charging-station"></i> Airtel Capped</div>
+                    </div>
+                </div>
             </div>
 
-            <div class="package-whatsapp-area">
-                <div class="package-input-group"><label><i class="fas fa-box"></i> Enter package</label><input type="text" id="packageNameInput" placeholder="e.g., Weekly Turbo"></div>
-                <div class="package-input-group"><label><i class="fas fa-credit-card"></i> Payment method</label><select id="paymentMethodSelect"><option>Airtel Money</option><option>Card</option><option>Crypto</option></select></div>
-                <div class="package-input-group"><label><i class="fas fa-calendar-week"></i> Days/Week</label><input type="text" id="daysWeekInput" placeholder="7 days"></div>
-                <button id="whatsappRedirectBtn" class="whatsapp-btn"><i class="fab fa-whatsapp"></i> Order via WhatsApp</button>
+            <div class="activity-log">
+                <div class="log-header" style="display:flex; justify-content:space-between;">
+                    <h4><i class="fas fa-list-ul"></i> Activity Log</h4>
+                    <button id="clearLogBtn" class="clear-log">Clear</button>
+                </div>
+                <div id="logList"></div>
             </div>
-
-            <div class="activity-log"><div class="log-header" style="display:flex; justify-content:space-between;"><h4><i class="fas fa-list-ul"></i> Activity Log</h4><button id="clearLogBtn" class="clear-log">Clear</button></div>
-            <div id="logList"></div></div>
         </div>
     </div>
 
-    <!-- MODAL: Payment Page for packages -->
+    <!-- MODAL: Payment Page with Paystack Integration -->
     <div id="paymentModal" class="modal-overlay">
         <div class="payment-modal">
-            <div class="modal-header"><h3 id="modalTitle">Choose Package</h3><button class="close-modal" id="closeModalBtn">&times;</button></div>
+            <div class="modal-header">
+                <h3 id="modalTitle">Choose Package</h3>
+                <button class="close-modal" id="closeModalBtn">&times;</button>
+            </div>
             <div class="modal-body">
+                <p class="payment-description" id="paymentDescription">Select your package and pay securely with Card or M-Pesa</p>
+                
                 <div id="packageOptionsList" class="package-list"></div>
-                <div class="total-section"><span>Total Amount:</span><span id="totalAmount">KSh 0</span></div>
-                <button id="checkoutBtn" class="checkout-btn"><i class="fab fa-whatsapp"></i> Proceed to Payment</button>
+                
+                <div class="total-section">
+                    <span>Total Amount:</span>
+                    <span id="totalAmount">KSh 0</span>
+                </div>
+                
+                <button id="payButton" class="pay-button">
+                    <i class="fas fa-credit-card"></i> Lipa na Mpesa / Card
+                </button>
+                
+                <div class="divider">
+                    <span>or pay with</span>
+                </div>
+                
+                <div class="alternative-payments">
+                    <button id="paypalButton" class="alt-pay-button paypal">
+                        <i class="fab fa-paypal"></i> PayPal
+                    </button>
+                    <button id="stripeButton" class="alt-pay-button stripe">
+                        <i class="fab fa-cc-stripe"></i> Stripe
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Paystack Script -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    
     <script>
         (function(){
             // ---------- SIMPLE AUTH ----------
@@ -373,7 +545,7 @@
             function hashPwd(p){ let h=0; for(let i=0;i<p.length;i++){ h=((h<<5)-h)+p.charCodeAt(i); h|=0; } return 'nx_'+Math.abs(h).toString(36); }
             function validateEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
             function findUser(email){ return getUsers().find(u=>u.email.toLowerCase()===email.toLowerCase()); }
-            // Password validation: only minimum 8 characters required
+            
             function register(name,email,pass){ 
                 if(findUser(email)) throw new Error('Email exists'); 
                 if(pass.length < 8) throw new Error('Password must be at least 8 characters'); 
@@ -383,8 +555,19 @@
                 saveUsers(users); 
                 return user; 
             }
-            function login(email,pass){ const u=findUser(email); if(!u||u.password!==hashPwd(pass)) throw new Error('Invalid'); return u; }
-            if(!findUser('demo@bypass.io')){ const u=getUsers(); u.push({id:1,name:'Demo User',email:'demo@bypass.io',password:hashPwd('Demo@123')}); saveUsers(u); }
+            
+            function login(email,pass){ 
+                const u=findUser(email); 
+                if(!u||u.password!==hashPwd(pass)) throw new Error('Invalid credentials'); 
+                return u; 
+            }
+            
+            if(!findUser('demo@bypass.io')){ 
+                const u=getUsers(); 
+                u.push({id:1,name:'Demo User',email:'demo@bypass.io',password:hashPwd('Demo@123')}); 
+                saveUsers(u); 
+            }
+            
             const SESSION_KEY='nexus_session';
             function setSession(u){ sessionStorage.setItem(SESSION_KEY,JSON.stringify({name:u.name,email:u.email})); }
             function getSession(){ const s=sessionStorage.getItem(SESSION_KEY); return s?JSON.parse(s):null; }
@@ -397,42 +580,91 @@
             const loginBtn=document.getElementById('doLoginBtn'), signupBtn=document.getElementById('doSignupBtn');
             const logoutDash=document.getElementById('logoutBtnDash');
             const dashboardUserName=document.getElementById('dashboardUserName');
-            const whatsappBtn=document.getElementById('whatsappRedirectBtn');
             const clearLogBtn=document.getElementById('clearLogBtn');
             const logContainer=document.getElementById('logList');
+            
             let activityLogs=JSON.parse(localStorage.getItem('nexus_activity')||'[]');
-            function addLog(msg){ const log={id:Date.now(),text:msg,time:new Date().toLocaleTimeString()}; activityLogs.unshift(log); if(activityLogs.length>30) activityLogs.pop(); localStorage.setItem('nexus_activity',JSON.stringify(activityLogs)); renderLogs(); }
-            function renderLogs(){ if(!logContainer) return; if(activityLogs.length===0){ logContainer.innerHTML='<div class="log-item"><i class="fas fa-info-circle"></i><span>No activity</span></div>'; return; } logContainer.innerHTML=activityLogs.slice(0,20).map(l=>`<div class="log-item"><i class="fas fa-exchange-alt"></i><span>${escapeHtml(l.text)}</span><span class="log-time">${l.time}</span></div>`).join(''); }
-            function escapeHtml(s){ return s.replace(/[&<>]/g,function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
-            function showNotification(msg,type){ const c=document.getElementById('notifContainer'); const n=document.createElement('div'); n.className='notification'; n.style.borderLeftColor=type==='success'?'#2ecc71':type==='error'?'#e74c3c':'#f39c12'; n.innerHTML=`<i class="fas ${type==='success'?'fa-check-circle':'fa-info-circle'}"></i> ${msg}`; c.appendChild(n); setTimeout(()=>n.remove(),3500); }
+            
+            function addLog(msg){ 
+                const log={id:Date.now(),text:msg,time:new Date().toLocaleTimeString()}; 
+                activityLogs.unshift(log); 
+                if(activityLogs.length>30) activityLogs.pop(); 
+                localStorage.setItem('nexus_activity',JSON.stringify(activityLogs)); 
+                renderLogs(); 
+            }
+            
+            function renderLogs(){ 
+                if(!logContainer) return; 
+                if(activityLogs.length===0){ 
+                    logContainer.innerHTML='<div class="log-item"><i class="fas fa-info-circle"></i><span>No activity</span></div>'; 
+                    return; 
+                } 
+                logContainer.innerHTML=activityLogs.slice(0,20).map(l=>`
+                    <div class="log-item">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>${escapeHtml(l.text)}</span>
+                        <span class="log-time">${l.time}</span>
+                    </div>
+                `).join(''); 
+            }
+            
+            function escapeHtml(s){ 
+                return s.replace(/[&<>]/g,function(m){
+                    if(m==='&') return '&amp;'; 
+                    if(m==='<') return '&lt;'; 
+                    if(m==='>') return '&gt;'; 
+                    return m;
+                }); 
+            }
+            
+            function showNotification(msg,type){ 
+                const c=document.getElementById('notifContainer'); 
+                const n=document.createElement('div'); 
+                n.className='notification'; 
+                n.style.borderLeftColor=type==='success'?'#2ecc71':type==='error'?'#e74c3c':'#f39c12'; 
+                n.innerHTML=`<i class="fas ${type==='success'?'fa-check-circle':'fa-info-circle'}"></i> ${msg}`; 
+                c.appendChild(n); 
+                setTimeout(()=>n.remove(),3500); 
+            }
 
-            // Bypass states (keep for activation tracking but no UI badges)
             let bypassStates = JSON.parse(localStorage.getItem('bypass_states') || '{"dynamic-wifi":false,"prestige-wifi":false,"duke-wifi":false,"tiktok-bypass":false,"youtube-bypass":false,"saf-capped":false,"airtel-capped":false}');
             
-            // ---------- PACKAGE PRICING IN KENYAN SHILLINGS (KSh) ----------
+            // Package pricing in KES
             const PACKAGES = [
-                { id: '1day', name: '1 Day Pass', days: 1, price: 20, currency: 'KSh' },
-                { id: '3days', name: '3 Days Pass', days: 3, price: 50, currency: 'KSh' },
-                { id: '7days', name: '7 Days (1 Week)', days: 7, price: 100, currency: 'KSh' },
-                { id: '30days', name: '30 Days (Monthly)', days: 30, price: 350, currency: 'KSh' }
+                { id: '1day', name: '1 Day Pass', days: 1, price: 20, currency: 'KES' },
+                { id: '3days', name: '3 Days Pass', days: 3, price: 50, currency: 'KES' },
+                { id: '7days', name: '7 Days (1 Week)', days: 7, price: 100, currency: 'KES' },
+                { id: '30days', name: '30 Days (Monthly)', days: 30, price: 350, currency: 'KES' }
             ];
+            
             let currentSelectedPackage = null;
             let currentBypassContext = { name: '', category: '', bypassId: '' };
 
-            function formatPrice(price) { return `KSh ${price}`; }
+            function formatPrice(price) { return `KES ${price}`; }
 
             function showPaymentModal(bypassName, bypassId, category){
                 currentBypassContext = { name: bypassName, bypassId: bypassId, category: category };
                 const modal = document.getElementById('paymentModal');
                 const modalTitle = document.getElementById('modalTitle');
+                const paymentDesc = document.getElementById('paymentDescription');
+                
                 modalTitle.innerText = `Buy Package: ${bypassName}`;
+                paymentDesc.innerText = `Secure payment for ${bypassName}. Pay with Card or M-Pesa`;
+                
                 const container = document.getElementById('packageOptionsList');
                 container.innerHTML = '';
+                
                 PACKAGES.forEach(pkg => {
                     const pkgDiv = document.createElement('div');
                     pkgDiv.className = 'package-option';
                     if(currentSelectedPackage && currentSelectedPackage.id === pkg.id) pkgDiv.classList.add('selected');
-                    pkgDiv.innerHTML = `<div class="package-info"><h4>${pkg.name}</h4><p>${pkg.days} day(s) access</p></div><div class="package-price">${formatPrice(pkg.price)}</div>`;
+                    pkgDiv.innerHTML = `
+                        <div class="package-info">
+                            <h4>${pkg.name}</h4>
+                            <p>${pkg.days} day(s) access</p>
+                        </div>
+                        <div class="package-price">${formatPrice(pkg.price)}</div>
+                    `;
                     pkgDiv.addEventListener('click', () => {
                         document.querySelectorAll('.package-option').forEach(el=>el.classList.remove('selected'));
                         pkgDiv.classList.add('selected');
@@ -441,33 +673,78 @@
                     });
                     container.appendChild(pkgDiv);
                 });
+                
                 if(currentSelectedPackage){
                     document.getElementById('totalAmount').innerText = formatPrice(currentSelectedPackage.price);
                 } else {
                     document.getElementById('totalAmount').innerText = formatPrice(0);
                 }
+                
                 modal.classList.add('active');
             }
 
-            function closeModal(){ document.getElementById('paymentModal').classList.remove('active'); }
+            function closeModal(){ 
+                document.getElementById('paymentModal').classList.remove('active'); 
+            }
 
-            function handleCheckout(){
+            // Paystack Integration
+            function initializePaystackPayment(){
                 if(!currentSelectedPackage){
                     showNotification('Please select a package first', 'error');
                     return;
                 }
+                
                 const session = getSession();
-                const userName = session ? session.name : 'Guest';
-                const packageDetail = `${currentSelectedPackage.name} (${currentSelectedPackage.days} days) - ${formatPrice(currentSelectedPackage.price)}`;
-                const message = `🔹 *NEXUS BYPASS ORDER* 🔹%0A👤 User: ${userName}%0A📡 Bypass Type: ${currentBypassContext.name} (${currentBypassContext.category})%0A📦 Package: ${packageDetail}%0A💰 Price: ${formatPrice(currentSelectedPackage.price)}%0A🛡️ Payment required to activate.%0A🔗 Order via dashboard.`;
-                const whatsappNumber = '+584265907014';
-                const url = `https://wa.me/${whatsappNumber}?text=${message}`;
-                window.open(url, '_blank');
-                // Activate bypass after order (store state but no UI badge)
+                const userEmail = session ? session.email : 'customer@nexus.com';
+                const userName = session ? session.name : 'Guest User';
+                
+                const handler = PaystackPop.setup({
+                    key: 'pk_live_16142fe1295bff6eab1ec0888895754f8e90a96b', // Replace with your Paystack public key
+                    email: userEmail,
+                    amount: currentSelectedPackage.price * 100, // Amount in kobo (KES * 100)
+                    currency: 'KES',
+                    ref: 'NX-' + Date.now(),
+                    metadata: {
+                        custom_fields: [
+                            {
+                                display_name: "Bypass Type",
+                                variable_name: "bypass_type",
+                                value: currentBypassContext.name
+                            },
+                            {
+                                display_name: "Package",
+                                variable_name: "package",
+                                value: currentSelectedPackage.name
+                            },
+                            {
+                                display_name: "User",
+                                variable_name: "user",
+                                value: userName
+                            }
+                        ]
+                    },
+                    callback: function(response){
+                        // Payment successful
+                        handleSuccessfulPayment(response);
+                    },
+                    onClose: function(){
+                        showNotification('Payment window closed', 'info');
+                    }
+                });
+                
+                handler.openIframe();
+            }
+
+            function handleSuccessfulPayment(response){
+                // Activate bypass
                 bypassStates[currentBypassContext.bypassId] = true;
                 localStorage.setItem('bypass_states', JSON.stringify(bypassStates));
-                addLog(`✅ ORDER PLACED: ${currentBypassContext.name} - ${currentSelectedPackage.name} (${formatPrice(currentSelectedPackage.price)})`);
-                showNotification(`Package purchased! ${currentBypassContext.name} activated.`, 'success');
+                
+                // Log the successful payment
+                addLog(`✅ PAYMENT SUCCESS: ${currentBypassContext.name} - ${currentSelectedPackage.name} (${formatPrice(currentSelectedPackage.price)}) - Ref: ${response.reference}`);
+                
+                showNotification(`Payment successful! ${currentBypassContext.name} activated.`, 'success');
+                
                 closeModal();
                 currentSelectedPackage = null;
             }
@@ -478,6 +755,7 @@
                     opt.addEventListener('click', purchaseHandler);
                 });
             }
+            
             function purchaseHandler(e){
                 e.stopPropagation();
                 const target = e.currentTarget;
@@ -495,50 +773,101 @@
                 renderLogs();
                 addLog(`Dashboard opened — ${name}`);
             }
-            function showAuth(){ authCard.classList.remove('hidden'); dashCard.classList.add('hidden'); loginPanel.classList.remove('hidden'); signupPanel.classList.add('hidden'); }
+            
+            function showAuth(){ 
+                authCard.classList.remove('hidden'); 
+                dashCard.classList.add('hidden'); 
+                loginPanel.classList.remove('hidden'); 
+                signupPanel.classList.add('hidden'); 
+            }
+            
             function handleLogin(){
                 const email=document.getElementById('loginEmail').value.trim();
                 const pwd=document.getElementById('loginPass').value;
                 if(!email||!pwd){ showNotification('Enter credentials','error'); return; }
-                try{ const user=login(email,pwd); setSession(user); showDashboardUI(user.name); showNotification(`Welcome ${user.name}`,'success'); }catch(e){ showNotification(e.message,'error'); }
+                try{ 
+                    const user=login(email,pwd); 
+                    setSession(user); 
+                    showDashboardUI(user.name); 
+                    showNotification(`Welcome ${user.name}`,'success'); 
+                }catch(e){ 
+                    showNotification(e.message,'error'); 
+                }
             }
+            
             function handleSignup(){
                 const name=document.getElementById('signupName').value.trim();
                 const email=document.getElementById('signupEmail').value.trim();
                 const pwd=document.getElementById('signupPass').value;
                 const conf=document.getElementById('signupConfirm').value;
                 if(pwd!==conf){ showNotification('Passwords mismatch','error'); return; }
-                try{ const newUser=register(name,email,pwd); setSession(newUser); showDashboardUI(newUser.name); addLog(`New account: ${email}`); showNotification('Account created!','success'); }catch(e){ showNotification(e.message,'error'); }
+                try{ 
+                    const newUser=register(name,email,pwd); 
+                    setSession(newUser); 
+                    showDashboardUI(newUser.name); 
+                    addLog(`New account: ${email}`); 
+                    showNotification('Account created!','success'); 
+                }catch(e){ 
+                    showNotification(e.message,'error'); 
+                }
             }
-            function handleLogout(){ clearSession(); showAuth(); addLog('User logged out'); showNotification('Logged out','info'); }
-            function handleWhatsAppOrder(){
-                const packageVal=document.getElementById('packageNameInput').value.trim();
-                const payment=document.getElementById('paymentMethodSelect').value;
-                const days=document.getElementById('daysWeekInput').value.trim();
-                if(!packageVal && !days){ showNotification('Enter package or duration','error'); return; }
-                const session=getSession();
-                const user=session?session.name:'Guest';
-                const msg = `🔹 *BYPASS ORDER* 🔹%0A👤 ${user}%0A📦 ${packageVal||'N/A'}%0A💰 ${payment}%0A📅 ${days||'N/A'}%0A🛡️ NEXUS DASHBOARD`;
-                window.open(`https://wa.me/+584265907014?text=${msg}`,'_blank');
-                addLog(`WhatsApp order: ${packageVal}, ${payment}, ${days}`);
-                showNotification('Redirecting to WhatsApp','success');
+            
+            function handleLogout(){ 
+                clearSession(); 
+                showAuth(); 
+                addLog('User logged out'); 
+                showNotification('Logged out','info'); 
             }
-            function clearLogs(){ activityLogs=[]; localStorage.setItem('nexus_activity',JSON.stringify([])); renderLogs(); showNotification('Logs cleared','info'); }
+            
+            function clearLogs(){ 
+                activityLogs=[]; 
+                localStorage.setItem('nexus_activity',JSON.stringify([])); 
+                renderLogs(); 
+                showNotification('Logs cleared','info'); 
+            }
+
+            // Alternative payment methods (demo)
+            function handlePayPalPayment(){
+                if(!currentSelectedPackage){
+                    showNotification('Please select a package first', 'error');
+                    return;
+                }
+                showNotification('PayPal integration - Add your PayPal Client ID', 'info');
+                addLog(`PayPal payment initiated for ${currentSelectedPackage.name}`);
+            }
+
+            function handleStripePayment(){
+                if(!currentSelectedPackage){
+                    showNotification('Please select a package first', 'error');
+                    return;
+                }
+                showNotification('Stripe integration - Add your Stripe Public Key', 'info');
+                addLog(`Stripe payment initiated for ${currentSelectedPackage.name}`);
+            }
 
             function init(){
-                loginBtn.onclick=handleLogin; signupBtn.onclick=handleSignup;
+                loginBtn.onclick=handleLogin; 
+                signupBtn.onclick=handleSignup;
                 showSignup.onclick=()=>{ loginPanel.classList.add('hidden'); signupPanel.classList.remove('hidden'); };
                 showLogin.onclick=()=>{ loginPanel.classList.remove('hidden'); signupPanel.classList.add('hidden'); };
                 logoutDash.onclick=handleLogout;
-                whatsappBtn.onclick=handleWhatsAppOrder;
                 clearLogBtn.onclick=clearLogs;
+                
                 document.getElementById('closeModalBtn').onclick=closeModal;
-                document.getElementById('checkoutBtn').onclick=handleCheckout;
+                document.getElementById('payButton').onclick=initializePaystackPayment;
+                document.getElementById('paypalButton').onclick=handlePayPalPayment;
+                document.getElementById('stripeButton').onclick=handleStripePayment;
+                
                 attachBypassPurchaseEvents();
+                
                 const session=getSession();
                 if(session){ showDashboardUI(session.name); } else { showAuth(); }
-                window.addEventListener('click',(e)=>{ if(e.target===document.getElementById('paymentModal')) closeModal(); });
+                
+                window.addEventListener('click',(e)=>{ 
+                    if(e.target===document.getElementById('paymentModal')) closeModal(); 
+                });
             }
+            
             init();
         })();
     </script>
