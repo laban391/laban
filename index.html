@@ -8,8 +8,65 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Google Identity Services -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Firebase Modular SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut,
+            sendPasswordResetEmail,
+            onAuthStateChanged,
+            updateProfile
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            setDoc,
+            doc,
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBTY2G_U7aUDK0plAWjdknNE0LulYWUR7s",
+            authDomain: "sign-40d89.firebaseapp.com",
+            projectId: "sign-40d89",
+            storageBucket: "sign-40d89.firebasestorage.app",
+            messagingSenderId: "168780036191",
+            appId: "1:168780036191:web:f486682be243ecdecd83ea",
+            measurementId: "G-L2GE7QTNF9"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // Make Firebase services globally available
+        window.auth = auth;
+        window.db = db;
+        window.firebaseAuth = {
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut,
+            sendPasswordResetEmail,
+            onAuthStateChanged,
+            updateProfile
+        };
+        window.firebaseFirestore = {
+            collection,
+            addDoc,
+            setDoc,
+            doc,
+            serverTimestamp
+        };
+        
+        console.log('Firebase initialized successfully');
+    </script>
     <style>
         * {
             margin: 0;
@@ -94,7 +151,98 @@
         .dashboard-card::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 8px; }
         .dashboard-card::-webkit-scrollbar-thumb { background: #f9731680; border-radius: 8px; }
 
-        /* Loading State */
+        .input-group {
+            position: relative;
+            margin-bottom: 1.2rem;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1rem;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.9rem 1rem 0.9rem 3rem;
+            background: rgba(20, 30, 55, 0.6);
+            border: 1.5px solid rgba(255, 255, 200, 0.2);
+            border-radius: 60px;
+            font-size: 1rem;
+            color: white;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-field:focus {
+            border-color: #ffcd7e;
+            box-shadow: 0 0 15px rgba(255, 205, 126, 0.2);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            margin-left: 1rem;
+            min-height: 1.2rem;
+        }
+
+        .btn {
+            background: linear-gradient(105deg, #f97316, #e11d48);
+            padding: 0.9rem;
+            border-radius: 60px;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.4);
+        }
+
+        .toggle-text {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .toggle-link {
+            color: #ffcf8a;
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-top: -0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .forgot-password a {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -136,7 +284,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* MODAL - Payment Page */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -168,6 +315,8 @@
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(249, 115, 22, 0.3);
             overflow: hidden;
             animation: modalPop 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .success-modal {
@@ -202,22 +351,13 @@
             color: transparent;
         }
 
-        .success-modal .modal-header h3 {
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
-            -webkit-background-clip: text;
-            background-clip: text;
-        }
-
         .close-modal {
             background: none;
             border: none;
             color: #ff9f7c;
             font-size: 1.8rem;
             cursor: pointer;
-            transition: 0.2s;
         }
-
-        .close-modal:hover { color: #ff6b6b; transform: scale(1.1); }
 
         .modal-body { 
             padding: 1.8rem; 
@@ -270,7 +410,6 @@
             font-size: 1.3rem; 
             font-weight: bold; 
             color: #c084fc;
-            text-shadow: 0 0 5px rgba(192, 132, 252, 0.3);
         }
 
         .total-section {
@@ -284,17 +423,7 @@
             font-weight: bold;
             color: white;
         }
-        
-        .total-section span:first-child {
-            color: white;
-        }
-        
-        #totalAmount {
-            color: #c084fc;
-            font-weight: bold;
-        }
 
-        /* Success Page Styles */
         .success-icon {
             font-size: 4rem;
             color: #2ecc71;
@@ -316,10 +445,6 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-
         .detail-label {
             color: rgba(255, 255, 255, 0.7);
             font-size: 0.9rem;
@@ -328,7 +453,6 @@
         .detail-value {
             color: white;
             font-weight: 600;
-            font-size: 0.95rem;
         }
 
         .hardware-input-group {
@@ -353,24 +477,11 @@
             font-family: monospace;
             letter-spacing: 2px;
             text-align: center;
-            transition: all 0.3s;
         }
 
         .hardware-input:focus {
             outline: none;
             border-color: #ffcd7e;
-            box-shadow: 0 0 15px rgba(255, 205, 126, 0.3);
-        }
-
-        .hardware-input.error {
-            border-color: #e74c3c;
-            animation: shake 0.3s;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
         }
 
         .char-counter {
@@ -394,7 +505,6 @@
             font-size: 1.1rem;
             color: white;
             cursor: pointer;
-            transition: 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -407,16 +517,198 @@
             cursor: not-allowed;
         }
 
-        .submit-btn:not(:disabled):hover { 
-            transform: scale(1.02); 
-            box-shadow: 0 0 20px #25d366aa; 
+        .pay-button {
+            width: 100%;
+            background: linear-gradient(105deg, #25d366, #128c7e);
+            border: none;
+            padding: 1rem;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
-        /* Google Sign-In Button */
-        .google-signin-container {
+        .alternative-payments {
             display: flex;
+            gap: 1rem;
+        }
+
+        .alt-pay-button {
+            flex: 1;
+            padding: 0.8rem;
+            border-radius: 60px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
             justify-content: center;
+            gap: 8px;
+        }
+
+        .alt-pay-button.paypal {
+            background: linear-gradient(105deg, #003087, #009cde);
+            color: white;
+        }
+
+        .alt-pay-button.stripe {
+            background: linear-gradient(105deg, #635bff, #00d4ff);
+            color: white;
+        }
+
+        .bypass-mega-card { 
+            margin-bottom: 1.5rem; 
+            background: rgba(20, 30, 50, 0.5); 
+            border-radius: 2rem; 
+            border: 1px solid rgba(255,200,150,0.3); 
+            overflow: hidden; 
+        }
+        
+        .card-header-main { 
+            background: rgba(0, 0, 0, 0.3); 
+            padding: 1rem 1.8rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 14px; 
+            border-bottom: 1px solid rgba(255,215,150,0.3); 
+        }
+        
+        .card-header-main i { font-size: 1.8rem; color: #ffcd7e; }
+        .card-header-main h3 { font-size: 1.3rem; color: white; }
+        
+        .sub-buttons { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 0.8rem; 
+            padding: 1.2rem 1.8rem; 
+        }
+        
+        .bypass-option { 
+            flex: 1; 
+            min-width: 160px; 
+            background: rgba(0,0,0,0.35); 
+            border: 1px solid rgba(255,200,120,0.4); 
+            border-radius: 60px; 
+            padding: 0.8rem 1.2rem; 
+            display: flex; 
+            justify-content: center;
+            align-items: center; 
+            cursor: pointer; 
+            color: white;
+            gap: 10px;
+        }
+        
+        .bypass-option:hover { 
+            background: rgba(249,115,22,0.2); 
+            border-color: #ffa559; 
+        }
+        
+        .hidden { display: none !important; }
+        
+        .notification { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            z-index: 2000; 
+            background: #0f172ad9; 
+            backdrop-filter: blur(12px); 
+            padding: 0.9rem 1.5rem; 
+            border-radius: 50px; 
+            border-left: 5px solid; 
+            color: white; 
+            animation: slideNotif 0.25s ease; 
+        }
+        
+        @keyframes slideNotif { 
+            from { transform: translateX(100%); opacity: 0; } 
+            to { transform: translateX(0); opacity: 1; } 
+        }
+        
+        .logout-btn { 
+            background: rgba(255,120,100,0.15); 
+            border: 1px solid #ff9f7c; 
+            border-radius: 40px; 
+            padding: 0.55rem 1.5rem; 
+            color: #ffe0b5; 
+            cursor: pointer; 
+        }
+        
+        .activity-log { 
+            margin-top: 2rem; 
+            background: rgba(0,0,0,0.3); 
+            border-radius: 2rem; 
+            padding: 1.5rem; 
+        }
+        
+        .log-header h4 { color: #ffcf8a; }
+        
+        .log-item { 
+            padding: 0.6rem 0; 
+            border-bottom: 1px solid rgba(255,255,255,0.08); 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            font-size: 0.85rem; 
+            color: #e0e0e0; 
+        }
+        
+        .log-time { margin-left: auto; font-size: 0.7rem; opacity: 0.7; }
+        
+        .clear-log { 
+            background: #ff5f5f20; 
+            border: 1px solid #ff8a8a; 
+            border-radius: 30px; 
+            padding: 0.3rem 1rem; 
+            color: #ffb3b3; 
+            cursor: pointer; 
+        }
+        
+        .welcome-title { color: white; font-size: 1.5rem; }
+        .sub-glow { color: rgba(255,245,210,0.8); }
+        
+        .user-profile { 
+            display: flex; 
+            align-items: center; 
+            gap: 1rem; 
+        }
+        
+        .user-avatar { 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            border: 2px solid #ffcd7e; 
+            background: linear-gradient(135deg, #f97316, #e11d48); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            color: white; 
+        }
+        
+        h2 {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .welcome-message {
+            text-align: center;
             margin: 1.5rem 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .required-badge {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-left: 0.3rem;
         }
 
         .divider {
@@ -438,127 +730,6 @@
             padding: 0 10px;
             font-size: 0.9rem;
         }
-
-        /* Payment Buttons */
-        .payment-description {
-            color: #cccccc;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-        }
-
-        .pay-button {
-            width: 100%;
-            background: linear-gradient(105deg, #25d366, #128c7e);
-            border: none;
-            padding: 1rem;
-            border-radius: 60px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: white;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .pay-button:hover { 
-            transform: scale(1.02); 
-            box-shadow: 0 0 20px #25d366aa; 
-        }
-
-        .alternative-payments {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .alt-pay-button {
-            flex: 1;
-            padding: 0.8rem;
-            border-radius: 60px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: 0.2s;
-        }
-
-        .alt-pay-button.paypal {
-            background: linear-gradient(105deg, #003087, #009cde);
-            color: white;
-        }
-
-        .alt-pay-button.stripe {
-            background: linear-gradient(105deg, #635bff, #00d4ff);
-            color: white;
-        }
-
-        .alt-pay-button:hover {
-            transform: scale(1.02);
-            opacity: 0.9;
-        }
-
-        .bypass-mega-card { margin-bottom: 1.5rem; background: rgba(20, 30, 50, 0.5); border-radius: 2rem; border: 1px solid rgba(255,200,150,0.3); overflow: hidden; }
-        .card-header-main { background: rgba(0, 0, 0, 0.3); padding: 1rem 1.8rem; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid rgba(255,215,150,0.3); }
-        .card-header-main i { font-size: 1.8rem; color: #ffcd7e; }
-        .card-header-main h3 { font-size: 1.3rem; color: white; }
-        .sub-buttons { display: flex; flex-wrap: wrap; gap: 0.8rem; padding: 1.2rem 1.8rem; }
-        .bypass-option { 
-            flex: 1; 
-            min-width: 160px; 
-            background: rgba(0,0,0,0.35); 
-            border: 1px solid rgba(255,200,120,0.4); 
-            border-radius: 60px; 
-            padding: 0.8rem 1.2rem; 
-            display: flex; 
-            justify-content: center;
-            align-items: center; 
-            cursor: pointer; 
-            transition: 0.2s; 
-            color: white;
-            text-align: center;
-            gap: 10px;
-        }
-        .bypass-option i { font-size: 1rem; }
-        .bypass-option:hover { background: rgba(249,115,22,0.2); border-color: #ffa559; transform: translateX(5px); }
-        .hidden { display: none !important; }
-        .notification { position: fixed; top: 20px; right: 20px; z-index: 2000; background: #0f172ad9; backdrop-filter: blur(12px); padding: 0.9rem 1.5rem; border-radius: 50px; border-left: 5px solid; color: white; animation: slideNotif 0.25s ease; }
-        @keyframes slideNotif { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        
-        .logout-btn { background: rgba(255,120,100,0.15); border: 1px solid #ff9f7c; border-radius: 40px; padding: 0.55rem 1.5rem; color: #ffe0b5; cursor: pointer; }
-        .activity-log { margin-top: 2rem; background: rgba(0,0,0,0.3); border-radius: 2rem; padding: 1.5rem; }
-        .log-header h4 { color: #ffcf8a; }
-        .log-item { padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 12px; font-size: 0.85rem; color: #e0e0e0; }
-        .log-time { margin-left: auto; font-size: 0.7rem; opacity: 0.7; }
-        .clear-log { background: #ff5f5f20; border: 1px solid #ff8a8a; border-radius: 30px; padding: 0.3rem 1rem; color: #ffb3b3; cursor: pointer; }
-        .welcome-title { color: white; font-size: 1.5rem; }
-        .sub-glow { color: rgba(255,245,210,0.8); }
-        .user-profile { display: flex; align-items: center; gap: 1rem; }
-        .user-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #ffcd7e; }
-        
-        h2 {
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .welcome-message {
-            text-align: center;
-            margin: 1.5rem 0;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .required-badge {
-            color: #e74c3c;
-            font-size: 0.85rem;
-            margin-left: 0.3rem;
-        }
     </style>
 </head>
 <body>
@@ -571,59 +742,94 @@
     </div>
     <div id="notifContainer"></div>
 
-    <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-content">
             <div class="loading-spinner"></div>
-            <p id="loadingText">Signing you in...</p>
+            <p id="loadingText">Loading...</p>
         </div>
     </div>
 
     <div class="app-container">
-        <!-- Google Sign-In Page -->
         <div id="authCard" class="glass-card">
-            <h2><i class="fas fa-bolt"></i> NEXUS BYPASS</h2>
-            <div class="sub-glow" style="text-align: center;">secure authentication</div>
-            
-            <div class="welcome-message">
-                <p>Sign in to access premium bypass services</p>
-            </div>
-            
-            <div class="google-signin-container">
-                <div id="g_id_onload"
-                    data-client_id="60128227746-sk4aq8h6qbeao2jst7ptj7mi7ncqshmd.apps.googleusercontent.com"
-                    data-context="signin"
-                    data-ux_mode="popup"
-                    data-callback="handleGoogleSignIn"
-                    data-auto_prompt="false"
-                    data-itp_support="true">
+            <div id="loginPanel">
+                <h2><i class="fas fa-bolt"></i> NEXUS BYPASS</h2>
+                <div class="sub-glow" style="text-align: center;">secure authentication</div>
+                
+                <div class="welcome-message">
+                    <p>Sign in to access premium bypass services</p>
                 </div>
-
-                <div class="g_id_signin"
-                    data-type="standard"
-                    data-shape="pill"
-                    data-theme="filled_blue"
-                    data-text="signin_with"
-                    data-size="large"
-                    data-logo_alignment="left"
-                    data-width="280">
+                
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="loginEmail" class="input-field" placeholder="Email address">
+                </div>
+                <div class="error-message" id="loginEmailErr"></div>
+                
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="loginPassword" class="input-field" placeholder="Password">
+                </div>
+                <div class="error-message" id="loginPasswordErr"></div>
+                
+                <div class="forgot-password">
+                    <a id="forgotPasswordLink">Forgot password?</a>
+                </div>
+                
+                <button class="btn" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+                
+                <div class="toggle-text">
+                    Don't have an account? <span class="toggle-link" id="showSignupLink">Create Account</span>
                 </div>
             </div>
             
-            <div class="divider">
-                <span>secure access</span>
-            </div>
-            
-            <div style="text-align: center; opacity: 0.7; font-size: 0.85rem;">
-                <i class="fas fa-shield-hal"></i> Protected by Google OAuth 2.0
+            <div id="signupPanel" class="hidden">
+                <h2><i class="fas fa-user-plus"></i> Create Account</h2>
+                <div class="sub-glow" style="text-align: center;">join nexus bypass</div>
+                
+                <div class="welcome-message">
+                    <p>Register to get started</p>
+                </div>
+                
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="signupName" class="input-field" placeholder="Full name">
+                </div>
+                <div class="error-message" id="signupNameErr"></div>
+                
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="signupEmail" class="input-field" placeholder="Email address">
+                </div>
+                <div class="error-message" id="signupEmailErr"></div>
+                
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="signupPassword" class="input-field" placeholder="Password (min. 6 characters)">
+                </div>
+                <div class="error-message" id="signupPasswordErr"></div>
+                
+                <div class="input-group">
+                    <i class="fas fa-check-circle"></i>
+                    <input type="password" id="signupConfirm" class="input-field" placeholder="Confirm password">
+                </div>
+                <div class="error-message" id="signupConfirmErr"></div>
+                
+                <button class="btn" id="signupBtn">
+                    <i class="fas fa-user-check"></i> Register
+                </button>
+                
+                <div class="toggle-text">
+                    Already have an account? <span class="toggle-link" id="showLoginLink">Sign In</span>
+                </div>
             </div>
         </div>
 
-        <!-- Dashboard -->
         <div id="dashboardCard" class="dashboard-card hidden">
             <div class="dashboard-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
                 <div class="user-profile">
-                    <img id="userAvatar" class="user-avatar" src="" alt="User">
+                    <div id="userAvatar" class="user-avatar">U</div>
                     <div>
                         <span class="welcome-title"><span id="dashboardUserName">User</span></span>
                         <p style="font-size:0.8rem; opacity:0.8;"><i class="fas fa-shield-hal"></i> active session · <span id="userEmail"></span></p>
@@ -669,7 +875,6 @@
         </div>
     </div>
 
-    <!-- Payment Modal -->
     <div id="paymentModal" class="modal-overlay">
         <div class="payment-modal">
             <div class="modal-header">
@@ -706,7 +911,6 @@
         </div>
     </div>
 
-    <!-- Success/Activation Modal -->
     <div id="successModal" class="modal-overlay">
         <div class="success-modal">
             <div class="modal-header">
@@ -718,163 +922,70 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
                 
-                <div class="purchase-details" id="purchaseDetails">
-                    <!-- Dynamically populated -->
-                </div>
+                <div class="purchase-details" id="purchaseDetails"></div>
                 
                 <div class="hardware-input-group">
                     <label for="hardwareId">
                         <i class="fas fa-microchip"></i> Hardware ID 
                         <span class="required-badge">*Required (40 characters)</span>
                     </label>
-                    <input 
-                        type="text" 
-                        id="hardwareId" 
-                        class="hardware-input" 
-                        placeholder="Enter your 40-character Hardware ID"
-                        maxlength="40"
-                        autocomplete="off"
-                    >
+                    <input type="text" id="hardwareId" class="hardware-input" placeholder="Enter your 40-character Hardware ID" maxlength="40">
                     <div class="char-counter" id="charCounter">0/40 characters</div>
                 </div>
                 
                 <button id="activateAndSendBtn" class="submit-btn" disabled>
                     <i class="fab fa-whatsapp"></i> Activate & Send to WhatsApp
                 </button>
-                
-                <p style="color: rgba(255,255,255,0.6); font-size: 0.85rem; margin-top: 1rem;">
-                    <i class="fas fa-info-circle"></i> Your activation details will be sent to our support team
-                </p>
             </div>
         </div>
     </div>
 
-    <!-- Paystack Script -->
     <script src="https://js.paystack.co/v1/inline.js"></script>
     
     <script>
-        // Global app state
-        let appReady = false;
-        let pendingUserData = null;
-        let paymentSuccessData = null;
-        
-        // Wait for DOM to be fully loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            appReady = true;
-            if (pendingUserData) {
-                processGoogleSignIn(pendingUserData);
-                pendingUserData = null;
-            }
-        });
-        
-        // Google Sign-In callback function (must be global)
-        function handleGoogleSignIn(response) {
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            const loadingText = document.getElementById('loadingText');
-            loadingOverlay.classList.add('active');
-            loadingText.textContent = 'Signing you in...';
-            
-            // Decode the JWT token to get user info
-            const responsePayload = decodeJwtResponse(response.credential);
-            
-            const userData = {
-                name: responsePayload.name,
-                email: responsePayload.email,
-                picture: responsePayload.picture,
-                googleId: responsePayload.sub,
-                emailVerified: responsePayload.email_verified
-            };
-            
-            if (appReady) {
-                processGoogleSignIn(userData);
-            } else {
-                pendingUserData = userData;
-            }
-        }
-        
-        function processGoogleSignIn(userData) {
-            // Store user in localStorage
-            const users = JSON.parse(localStorage.getItem('nexus_google_users') || '[]');
-            const existingUser = users.find(u => u.email === userData.email);
-            
-            if (!existingUser) {
-                users.push({
-                    ...userData,
-                    registeredAt: new Date().toISOString()
-                });
-                localStorage.setItem('nexus_google_users', JSON.stringify(users));
+        // Wait for Firebase to initialize
+        setTimeout(() => {
+            if (!window.auth) {
+                console.error('Firebase not initialized');
+                return;
             }
             
-            // Set session
-            sessionStorage.setItem('nexus_session', JSON.stringify(userData));
+            const auth = window.auth;
+            const db = window.db;
+            const { 
+                createUserWithEmailAndPassword, 
+                signInWithEmailAndPassword, 
+                signOut,
+                sendPasswordResetEmail,
+                onAuthStateChanged,
+                updateProfile
+            } = window.firebaseAuth;
+            const { collection, addDoc, setDoc, doc, serverTimestamp } = window.firebaseFirestore;
             
-            // Hide loading overlay
-            document.getElementById('loadingOverlay').classList.remove('active');
-            
-            // Show dashboard immediately
-            showDashboardUI(userData);
-            showNotification(`Welcome ${userData.name}!`, 'success');
-            
-            // Add log
-            setTimeout(() => {
-                if (typeof addLogToStorage === 'function') {
-                    addLogToStorage(`Google Sign-In successful: ${userData.email}`);
-                }
-            }, 100);
-        }
-        
-        // Helper function to decode JWT
-        function decodeJwtResponse(token) {
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            return JSON.parse(jsonPayload);
-        }
-
-        (function(){
-            // Activity log functions
+            // Activity log
             let activityLogs = JSON.parse(localStorage.getItem('nexus_activity') || '[]');
             
-            window.addLogToStorage = function(msg) {
-                const log = {
-                    id: Date.now(),
-                    text: msg,
-                    time: new Date().toLocaleTimeString()
-                };
+            function addLog(msg) {
+                const log = { id: Date.now(), text: msg, time: new Date().toLocaleTimeString() };
                 activityLogs.unshift(log);
                 if (activityLogs.length > 30) activityLogs.pop();
                 localStorage.setItem('nexus_activity', JSON.stringify(activityLogs));
                 renderLogs();
-            };
+            }
             
             function renderLogs() {
-                const logContainer = document.getElementById('logList');
-                if (!logContainer) return;
+                const container = document.getElementById('logList');
+                if (!container) return;
                 if (activityLogs.length === 0) {
-                    logContainer.innerHTML = '<div class="log-item"><i class="fas fa-info-circle"></i><span>No activity</span></div>';
+                    container.innerHTML = '<div class="log-item"><i class="fas fa-info-circle"></i><span>No activity</span></div>';
                     return;
                 }
-                logContainer.innerHTML = activityLogs.slice(0, 20).map(l => `
-                    <div class="log-item">
-                        <i class="fas fa-exchange-alt"></i>
-                        <span>${escapeHtml(l.text)}</span>
-                        <span class="log-time">${l.time}</span>
-                    </div>
+                container.innerHTML = activityLogs.slice(0, 20).map(l => `
+                    <div class="log-item"><i class="fas fa-exchange-alt"></i><span>${l.text}</span><span class="log-time">${l.time}</span></div>
                 `).join('');
             }
             
-            function escapeHtml(s) {
-                return s.replace(/[&<>]/g, function(m) {
-                    if (m === '&') return '&amp;';
-                    if (m === '<') return '&lt;';
-                    if (m === '>') return '&gt;';
-                    return m;
-                });
-            }
-            
-            window.showNotification = function(msg, type) {
+            function showNotification(msg, type) {
                 const c = document.getElementById('notifContainer');
                 const n = document.createElement('div');
                 n.className = 'notification';
@@ -882,395 +993,314 @@
                 n.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i> ${msg}`;
                 c.appendChild(n);
                 setTimeout(() => n.remove(), 3500);
-            };
-
-            // Dashboard UI functions
+            }
+            
             const authCard = document.getElementById('authCard');
             const dashCard = document.getElementById('dashboardCard');
-            const dashboardUserName = document.getElementById('dashboardUserName');
-            const userEmail = document.getElementById('userEmail');
-            const userAvatar = document.getElementById('userAvatar');
-            const logoutDash = document.getElementById('logoutBtnDash');
-            const clearLogBtn = document.getElementById('clearLogBtn');
+            const loginPanel = document.getElementById('loginPanel');
+            const signupPanel = document.getElementById('signupPanel');
+            const loadingOverlay = document.getElementById('loadingOverlay');
             
-            window.showDashboardUI = function(userData) {
+            function showLoading(text = 'Loading...') {
+                document.getElementById('loadingText').textContent = text;
+                loadingOverlay.classList.add('active');
+            }
+            
+            function hideLoading() {
+                loadingOverlay.classList.remove('active');
+            }
+            
+            function showDashboard(user) {
                 authCard.classList.add('hidden');
                 dashCard.classList.remove('hidden');
                 
-                dashboardUserName.innerText = userData.name;
-                userEmail.innerText = userData.email;
-                userAvatar.src = userData.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(userData.name) + '&background=ffcd7e&color=0a0f1f';
+                const displayName = user.displayName || user.email.split('@')[0];
+                document.getElementById('dashboardUserName').innerText = displayName;
+                document.getElementById('userEmail').innerText = user.email;
+                document.getElementById('userAvatar').textContent = displayName.charAt(0).toUpperCase();
                 
                 renderLogs();
-                addLogToStorage(`Dashboard opened — ${userData.name} (${userData.email})`);
-            };
+                addLog(`Dashboard opened — ${displayName}`);
+            }
             
             function showAuth() {
                 authCard.classList.remove('hidden');
                 dashCard.classList.add('hidden');
+                loginPanel.classList.remove('hidden');
+                signupPanel.classList.add('hidden');
             }
             
-            function handleLogout() {
-                sessionStorage.removeItem('nexus_session');
-                showAuth();
-                addLogToStorage('User signed out');
-                showNotification('Signed out successfully', 'info');
-            }
+            // Signup
+            document.getElementById('signupBtn').onclick = async () => {
+                const name = document.getElementById('signupName').value.trim();
+                const email = document.getElementById('signupEmail').value.trim();
+                const password = document.getElementById('signupPassword').value;
+                const confirm = document.getElementById('signupConfirm').value;
+                
+                if (!name) return showNotification('Name is required', 'error');
+                if (password !== confirm) return showNotification('Passwords do not match', 'error');
+                if (password.length < 6) return showNotification('Password must be at least 6 characters', 'error');
+                
+                showLoading('Creating account...');
+                
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(userCredential.user, { displayName: name });
+                    
+                    await setDoc(doc(db, 'users', userCredential.user.uid), {
+                        name, email, createdAt: serverTimestamp()
+                    });
+                    
+                    showNotification('Account created!', 'success');
+                    document.getElementById('signupName').value = '';
+                    document.getElementById('signupEmail').value = '';
+                    document.getElementById('signupPassword').value = '';
+                    document.getElementById('signupConfirm').value = '';
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            };
             
-            function clearLogs() {
+            // Login
+            document.getElementById('loginBtn').onclick = async () => {
+                const email = document.getElementById('loginEmail').value.trim();
+                const password = document.getElementById('loginPassword').value;
+                
+                if (!email || !password) return showNotification('Enter email and password', 'error');
+                
+                showLoading('Signing in...');
+                
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    document.getElementById('loginEmail').value = '';
+                    document.getElementById('loginPassword').value = '';
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            };
+            
+            // Logout
+            document.getElementById('logoutBtnDash').onclick = async () => {
+                try {
+                    await signOut(auth);
+                    showNotification('Signed out', 'success');
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                }
+            };
+            
+            // Forgot password
+            document.getElementById('forgotPasswordLink').onclick = async () => {
+                const email = document.getElementById('loginEmail').value.trim();
+                if (!email) return showNotification('Enter your email address', 'error');
+                
+                try {
+                    await sendPasswordResetEmail(auth, email);
+                    showNotification('Password reset email sent!', 'success');
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                }
+            };
+            
+            // Toggle login/signup
+            document.getElementById('showSignupLink').onclick = () => {
+                loginPanel.classList.add('hidden');
+                signupPanel.classList.remove('hidden');
+            };
+            
+            document.getElementById('showLoginLink').onclick = () => {
+                loginPanel.classList.remove('hidden');
+                signupPanel.classList.add('hidden');
+            };
+            
+            // Auth state observer
+            onAuthStateChanged(auth, (user) => {
+                hideLoading();
+                if (user) {
+                    showDashboard(user);
+                } else {
+                    showAuth();
+                }
+            });
+            
+            // Clear logs
+            document.getElementById('clearLogBtn').onclick = () => {
                 activityLogs = [];
                 localStorage.setItem('nexus_activity', JSON.stringify([]));
                 renderLogs();
                 showNotification('Logs cleared', 'info');
-            }
-
-            // Bypass states
-            let bypassStates = JSON.parse(localStorage.getItem('bypass_states') || '{"dynamic-wifi":false,"prestige-wifi":false,"duke-wifi":false,"tiktok-bypass":false,"youtube-bypass":false,"saf-capped":false,"airtel-capped":false}');
+            };
             
             // Package pricing
             const PACKAGES = [
-                { id: '1day', name: '1 Day Pass', days: 1, price: 20, currency: 'KES' },
-                { id: '3days', name: '3 Days Pass', days: 3, price: 50, currency: 'KES' },
-                { id: '7days', name: '7 Days (1 Week)', days: 7, price: 100, currency: 'KES' },
-                { id: '30days', name: '30 Days (Monthly)', days: 30, price: 350, currency: 'KES' }
+                { id: '1day', name: '1 Day Pass', days: 1, price: 20 },
+                { id: '3days', name: '3 Days Pass', days: 3, price: 50 },
+                { id: '7days', name: '7 Days (1 Week)', days: 7, price: 100 },
+                { id: '30days', name: '30 Days (Monthly)', days: 30, price: 350 }
             ];
             
-            let currentSelectedPackage = null;
-            let currentBypassContext = { name: '', category: '', bypassId: '' };
-
-            function formatPrice(price) { return `KES ${price}`; }
-
+            let currentPackage = null;
+            let currentBypass = { name: '', bypassId: '', category: '' };
+            let paymentData = null;
+            
             function showPaymentModal(bypassName, bypassId, category) {
-                currentBypassContext = { name: bypassName, bypassId: bypassId, category: category };
-                const modal = document.getElementById('paymentModal');
-                const modalTitle = document.getElementById('modalTitle');
-                const paymentDesc = document.getElementById('paymentDescription');
-                
-                modalTitle.innerText = `Buy Package: ${bypassName}`;
-                paymentDesc.innerText = `Secure payment for ${bypassName}. Pay with Card or M-Pesa`;
+                currentBypass = { name: bypassName, bypassId, category };
+                document.getElementById('modalTitle').innerText = `Buy Package: ${bypassName}`;
                 
                 const container = document.getElementById('packageOptionsList');
                 container.innerHTML = '';
                 
                 PACKAGES.forEach(pkg => {
-                    const pkgDiv = document.createElement('div');
-                    pkgDiv.className = 'package-option';
-                    if (currentSelectedPackage && currentSelectedPackage.id === pkg.id) pkgDiv.classList.add('selected');
-                    pkgDiv.innerHTML = `
-                        <div class="package-info">
-                            <h4>${pkg.name}</h4>
-                            <p>${pkg.days} day(s) access</p>
-                        </div>
-                        <div class="package-price">${formatPrice(pkg.price)}</div>
-                    `;
-                    pkgDiv.addEventListener('click', () => {
+                    const div = document.createElement('div');
+                    div.className = 'package-option';
+                    div.innerHTML = `<div class="package-info"><h4>${pkg.name}</h4><p>${pkg.days} day(s) access</p></div><div class="package-price">KES ${pkg.price}</div>`;
+                    div.onclick = () => {
                         document.querySelectorAll('.package-option').forEach(el => el.classList.remove('selected'));
-                        pkgDiv.classList.add('selected');
-                        currentSelectedPackage = pkg;
-                        document.getElementById('totalAmount').innerText = formatPrice(pkg.price);
-                    });
-                    container.appendChild(pkgDiv);
+                        div.classList.add('selected');
+                        currentPackage = pkg;
+                        document.getElementById('totalAmount').innerText = `KES ${pkg.price}`;
+                    };
+                    container.appendChild(div);
                 });
                 
-                if (currentSelectedPackage) {
-                    document.getElementById('totalAmount').innerText = formatPrice(currentSelectedPackage.price);
-                } else {
-                    document.getElementById('totalAmount').innerText = formatPrice(0);
-                }
-                
-                modal.classList.add('active');
+                document.getElementById('paymentModal').classList.add('active');
             }
-
-            function closePaymentModal() {
-                document.getElementById('paymentModal').classList.remove('active');
-            }
-
-            function showSuccessModal(paymentReference) {
-                const session = JSON.parse(sessionStorage.getItem('nexus_session') || '{}');
-                const userName = session.name || 'Guest User';
-                const userEmail = session.email || 'N/A';
-                
-                const now = new Date();
-                const dateStr = now.toLocaleDateString('en-GB', { 
-                    day: '2-digit', 
-                    month: '2-digit', 
-                    year: 'numeric' 
-                });
-                const timeStr = now.toLocaleTimeString('en-GB', { 
-                    hour: '2-digit', 
-                    minute: '2-digit', 
-                    second: '2-digit' 
-                });
-                
-                // Store payment data for activation
-                paymentSuccessData = {
-                    userName,
-                    userEmail,
-                    bypassName: currentBypassContext.name,
-                    bypassCategory: currentBypassContext.category,
-                    packageName: currentSelectedPackage.name,
-                    packageDays: currentSelectedPackage.days,
-                    amount: currentSelectedPackage.price,
-                    currency: currentSelectedPackage.currency,
-                    paymentReference,
-                    date: dateStr,
-                    time: timeStr,
-                    timestamp: now.toISOString()
+            
+            document.querySelectorAll('.bypass-option').forEach(opt => {
+                opt.onclick = () => {
+                    const bypassId = opt.dataset.bypass;
+                    const bypassName = opt.innerText.trim();
+                    const category = opt.dataset.category;
+                    showPaymentModal(bypassName, bypassId, category);
                 };
-                
-                // Populate purchase details
-                const detailsHtml = `
-                    <div class="detail-row">
-                        <span class="detail-label">Bypass Type:</span>
-                        <span class="detail-value">${currentBypassContext.name}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Package:</span>
-                        <span class="detail-value">${currentSelectedPackage.name}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Duration:</span>
-                        <span class="detail-value">${currentSelectedPackage.days} day(s)</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Amount Paid:</span>
-                        <span class="detail-value">${formatPrice(currentSelectedPackage.price)}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Payment Ref:</span>
-                        <span class="detail-value" style="font-family: monospace; font-size: 0.8rem;">${paymentReference}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Date & Time:</span>
-                        <span class="detail-value">${dateStr} ${timeStr}</span>
-                    </div>
-                `;
-                
-                document.getElementById('purchaseDetails').innerHTML = detailsHtml;
-                
-                // Reset hardware ID input
-                const hardwareInput = document.getElementById('hardwareId');
-                hardwareInput.value = '';
-                document.getElementById('charCounter').textContent = '0/40 characters';
-                document.getElementById('charCounter').classList.remove('valid');
-                document.getElementById('activateAndSendBtn').disabled = true;
-                
-                // Show success modal
-                document.getElementById('successModal').classList.add('active');
-            }
-
-            function closeSuccessModal() {
+            });
+            
+            document.getElementById('closeModalBtn').onclick = () => {
+                document.getElementById('paymentModal').classList.remove('active');
+            };
+            
+            document.getElementById('closeSuccessModalBtn').onclick = () => {
                 document.getElementById('successModal').classList.remove('active');
-                paymentSuccessData = null;
-            }
-
+            };
+            
             // Hardware ID validation
             const hardwareInput = document.getElementById('hardwareId');
             const charCounter = document.getElementById('charCounter');
             const activateBtn = document.getElementById('activateAndSendBtn');
             
-            hardwareInput.addEventListener('input', function(e) {
-                const value = e.target.value;
-                const length = value.length;
-                
-                charCounter.textContent = `${length}/40 characters`;
-                
-                if (length === 40) {
+            hardwareInput.oninput = function() {
+                const len = this.value.length;
+                charCounter.textContent = `${len}/40 characters`;
+                if (len === 40) {
                     charCounter.classList.add('valid');
                     activateBtn.disabled = false;
-                    hardwareInput.classList.remove('error');
                 } else {
                     charCounter.classList.remove('valid');
                     activateBtn.disabled = true;
                 }
-            });
+            };
             
-            function sendToWhatsApp() {
-                const hardwareId = hardwareInput.value.trim();
+            // Paystack payment
+            document.getElementById('payButton').onclick = () => {
+                if (!currentPackage) return showNotification('Select a package', 'error');
                 
-                if (hardwareId.length !== 40) {
-                    hardwareInput.classList.add('error');
-                    showNotification('Hardware ID must be exactly 40 characters', 'error');
-                    setTimeout(() => hardwareInput.classList.remove('error'), 500);
-                    return;
-                }
-                
-                if (!paymentSuccessData) {
-                    showNotification('Payment data not found', 'error');
-                    return;
-                }
-                
-                const data = paymentSuccessData;
-                
-                // Format WhatsApp message
-                const message = `🔐 *NEXUS BYPASS - ACTIVATION REQUEST* 🔐%0A%0A` +
-                    `👤 *Customer Details*%0A` +
-                    `Name: ${data.userName}%0A` +
-                    `Email: ${data.userEmail}%0A%0A` +
-                    `📡 *Bypass Information*%0A` +
-                    `Type: ${data.bypassName}%0A` +
-                    `Category: ${data.bypassCategory}%0A%0A` +
-                    `📦 *Package Details*%0A` +
-                    `Package: ${data.packageName}%0A` +
-                    `Duration: ${data.packageDays} day(s)%0A` +
-                    `Amount Paid: ${data.currency} ${data.amount}%0A%0A` +
-                    `💳 *Payment Information*%0A` +
-                    `Reference: ${data.paymentReference}%0A` +
-                    `Date: ${data.date}%0A` +
-                    `Time: ${data.time}%0A%0A` +
-                    `🔧 *Hardware ID* (40 characters)%0A` +
-                    `\`${hardwareId}\`%0A%0A` +
-                    `✅ *Status: Awaiting Activation*%0A` +
-                    `Please process this activation request.`;
-                
-                const whatsappNumber = '+584265907014';
-                const url = `https://wa.me/${whatsappNumber}?text=${message}`;
-                
-                // Activate bypass
-                bypassStates[currentBypassContext.bypassId] = true;
-                localStorage.setItem('bypass_states', JSON.stringify(bypassStates));
-                
-                // Log activation
-                addLogToStorage(`✅ ACTIVATED: ${data.bypassName} - ${data.packageName} - HWID: ${hardwareId.substring(0, 10)}...`);
-                
-                // Store activation in history
-                const activations = JSON.parse(localStorage.getItem('nexus_activations') || '[]');
-                activations.push({
-                    ...data,
-                    hardwareId: hardwareId,
-                    activatedAt: new Date().toISOString()
-                });
-                localStorage.setItem('nexus_activations', JSON.stringify(activations));
-                
-                // Open WhatsApp
-                window.open(url, '_blank');
-                
-                // Show success notification
-                showNotification('Activation request sent to WhatsApp!', 'success');
-                
-                // Close modal
-                closeSuccessModal();
-                
-                // Reset
-                currentSelectedPackage = null;
-            }
-
-            function initializePaystackPayment() {
-                if (!currentSelectedPackage) {
-                    showNotification('Please select a package first', 'error');
-                    return;
-                }
-                
-                const session = JSON.parse(sessionStorage.getItem('nexus_session') || '{}');
-                const userEmail = session.email || 'customer@nexus.com';
-                const userName = session.name || 'Guest User';
+                const user = auth.currentUser;
+                const email = user?.email || 'customer@nexus.com';
                 
                 const handler = PaystackPop.setup({
-                    key: 'pk_live_16142fe1295bff6eab1ec0888895754f8e90a96b', // Replace with your Paystack public key
-                    email: userEmail,
-                    amount: currentSelectedPackage.price * 100,
+                    key: 'pk_test_xxxxxxxxxxxxxxxxxxxxxxxx', // Replace with your key
+                    email: email,
+                    amount: currentPackage.price * 100,
                     currency: 'KES',
                     ref: 'NX-' + Date.now(),
-                    metadata: {
-                        custom_fields: [
-                            {
-                                display_name: "Bypass Type",
-                                variable_name: "bypass_type",
-                                value: currentBypassContext.name
-                            },
-                            {
-                                display_name: "Package",
-                                variable_name: "package",
-                                value: currentSelectedPackage.name
-                            },
-                            {
-                                display_name: "User",
-                                variable_name: "user",
-                                value: userName
-                            }
-                        ]
-                    },
-                    callback: function(response) {
-                        // Payment successful
-                        addLogToStorage(`💰 Payment successful: ${currentBypassContext.name} - ${currentSelectedPackage.name} (${formatPrice(currentSelectedPackage.price)})`);
+                    callback: (response) => {
+                        addLog(`Payment successful: ${currentBypass.name} - ${currentPackage.name}`);
+                        document.getElementById('paymentModal').classList.remove('active');
                         
-                        // Close payment modal
-                        closePaymentModal();
+                        const now = new Date();
+                        paymentData = {
+                            userName: user?.displayName || email.split('@')[0],
+                            userEmail: email,
+                            bypassName: currentBypass.name,
+                            bypassCategory: currentBypass.category,
+                            packageName: currentPackage.name,
+                            packageDays: currentPackage.days,
+                            amount: currentPackage.price,
+                            paymentReference: response.reference,
+                            date: now.toLocaleDateString('en-GB'),
+                            time: now.toLocaleTimeString('en-GB')
+                        };
                         
-                        // Show success modal with hardware ID collection
-                        showSuccessModal(response.reference);
+                        const detailsHtml = `
+                            <div class="detail-row"><span class="detail-label">Bypass Type:</span><span class="detail-value">${currentBypass.name}</span></div>
+                            <div class="detail-row"><span class="detail-label">Package:</span><span class="detail-value">${currentPackage.name}</span></div>
+                            <div class="detail-row"><span class="detail-label">Duration:</span><span class="detail-value">${currentPackage.days} day(s)</span></div>
+                            <div class="detail-row"><span class="detail-label">Amount Paid:</span><span class="detail-value">KES ${currentPackage.price}</span></div>
+                            <div class="detail-row"><span class="detail-label">Payment Ref:</span><span class="detail-value">${response.reference}</span></div>
+                            <div class="detail-row"><span class="detail-label">Date & Time:</span><span class="detail-value">${paymentData.date} ${paymentData.time}</span></div>
+                        `;
+                        
+                        document.getElementById('purchaseDetails').innerHTML = detailsHtml;
+                        document.getElementById('successModal').classList.add('active');
                     },
-                    onClose: function() {
-                        showNotification('Payment window closed', 'info');
-                    }
+                    onClose: () => showNotification('Payment cancelled', 'info')
                 });
                 
                 handler.openIframe();
-            }
-
-            function handlePayPalPayment() {
-                if (!currentSelectedPackage) {
-                    showNotification('Please select a package first', 'error');
-                    return;
-                }
-                showNotification('PayPal integration - Add your PayPal Client ID', 'info');
-                addLogToStorage(`PayPal payment initiated for ${currentSelectedPackage.name}`);
-            }
-
-            function handleStripePayment() {
-                if (!currentSelectedPackage) {
-                    showNotification('Please select a package first', 'error');
-                    return;
-                }
-                showNotification('Stripe integration - Add your Stripe Public Key', 'info');
-                addLogToStorage(`Stripe payment initiated for ${currentSelectedPackage.name}`);
-            }
-
-            function attachBypassPurchaseEvents() {
-                document.querySelectorAll('.bypass-option').forEach(opt => {
-                    opt.removeEventListener('click', purchaseHandler);
-                    opt.addEventListener('click', purchaseHandler);
-                });
-            }
+            };
             
-            function purchaseHandler(e) {
-                e.stopPropagation();
-                const target = e.currentTarget;
-                const bypassId = target.getAttribute('data-bypass');
-                const bypassName = target.innerText.trim() || bypassId;
-                const category = target.getAttribute('data-category') || 'Bypass';
-                showPaymentModal(bypassName, bypassId, category);
-            }
-
-            function init() {
-                logoutDash.onclick = handleLogout;
-                clearLogBtn.onclick = clearLogs;
+            // Send to WhatsApp
+            activateBtn.onclick = async () => {
+                const hardwareId = hardwareInput.value.trim();
+                if (hardwareId.length !== 40) return showNotification('Hardware ID must be 40 characters', 'error');
                 
-                document.getElementById('closeModalBtn').onclick = closePaymentModal;
-                document.getElementById('closeSuccessModalBtn').onclick = closeSuccessModal;
-                document.getElementById('payButton').onclick = initializePaystackPayment;
-                document.getElementById('paypalButton').onclick = handlePayPalPayment;
-                document.getElementById('stripeButton').onclick = handleStripePayment;
-                document.getElementById('activateAndSendBtn').onclick = sendToWhatsApp;
+                const message = `🔐 *NEXUS BYPASS - ACTIVATION* 🔐%0A%0A` +
+                    `👤 *Customer*%0AName: ${paymentData.userName}%0AEmail: ${paymentData.userEmail}%0A%0A` +
+                    `📡 *Bypass*%0AType: ${paymentData.bypassName}%0ACategory: ${paymentData.bypassCategory}%0A%0A` +
+                    `📦 *Package*%0A${paymentData.packageName}%0ADuration: ${paymentData.packageDays} day(s)%0AAmount: KES ${paymentData.amount}%0A%0A` +
+                    `💳 *Payment*%0ARef: ${paymentData.paymentReference}%0ADate: ${paymentData.date}%0ATime: ${paymentData.time}%0A%0A` +
+                    `🔧 *Hardware ID*%0A\`${hardwareId}\`%0A%0A✅ *Awaiting Activation*`;
                 
-                attachBypassPurchaseEvents();
-                
-                // Check for existing session
-                const session = JSON.parse(sessionStorage.getItem('nexus_session') || 'null');
-                if (session) {
-                    showDashboardUI(session);
-                } else {
-                    showAuth();
+                try {
+                    const user = auth.currentUser;
+                    if (user) {
+                        await addDoc(collection(db, 'activations'), {
+                            userId: user.uid,
+                            ...paymentData,
+                            hardwareId,
+                            activatedAt: serverTimestamp()
+                        });
+                    }
+                } catch (e) {
+                    console.error('Save error:', e);
                 }
                 
-                window.addEventListener('click', (e) => {
-                    if (e.target === document.getElementById('paymentModal')) closePaymentModal();
-                    if (e.target === document.getElementById('successModal')) closeSuccessModal();
-                });
-            }
+                window.open(`https://wa.me/+584265907014?text=${message}`, '_blank');
+                addLog(`Activated: ${paymentData.bypassName} - ${paymentData.packageName}`);
+                showNotification('Activation sent!', 'success');
+                document.getElementById('successModal').classList.remove('active');
+            };
             
-            init();
-        })();
+            // PayPal/Stripe placeholders
+            document.getElementById('paypalButton').onclick = () => showNotification('PayPal integration coming soon', 'info');
+            document.getElementById('stripeButton').onclick = () => showNotification('Stripe integration coming soon', 'info');
+            
+            // Close modals on outside click
+            window.onclick = (e) => {
+                if (e.target === document.getElementById('paymentModal')) {
+                    document.getElementById('paymentModal').classList.remove('active');
+                }
+                if (e.target === document.getElementById('successModal')) {
+                    document.getElementById('successModal').classList.remove('active');
+                }
+            };
+            
+            console.log('App initialized successfully');
+        }, 500);
     </script>
 </body>
 </html>
