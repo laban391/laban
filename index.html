@@ -8,10 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Paystack Script - Loaded directly with proper attributes -->
-    <script src="https://js.paystack.co/v1/inline.js" async></script>
     <!-- Firebase Modular SDK -->
     <script type="module">
+        // Import the functions you need from the SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { 
             getAuth, 
@@ -31,6 +30,7 @@
             serverTimestamp 
         } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBTY2G_U7aUDK0plAWjdknNE0LulYWUR7s",
             authDomain: "sign-40d89.firebaseapp.com",
@@ -41,10 +41,12 @@
             measurementId: "G-L2GE7QTNF9"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         
+        // Make Firebase services globally available
         window.auth = auth;
         window.db = db;
         window.firebaseAuth = {
@@ -63,7 +65,7 @@
             serverTimestamp
         };
         
-        console.log('Firebase initialized');
+        console.log('Firebase initialized successfully');
     </script>
     <style>
         * {
@@ -529,17 +531,6 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            transition: 0.2s;
-        }
-
-        .pay-button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .pay-button:hover:not(:disabled) {
-            transform: scale(1.02);
-            box-shadow: 0 0 20px rgba(37, 211, 102, 0.4);
         }
 
         .alternative-payments {
@@ -610,13 +601,11 @@
             cursor: pointer; 
             color: white;
             gap: 10px;
-            transition: 0.2s;
         }
         
         .bypass-option:hover { 
-            background: rgba(249,115,22,0.3); 
+            background: rgba(249,115,22,0.2); 
             border-color: #ffa559; 
-            transform: translateY(-2px);
         }
         
         .hidden { display: none !important; }
@@ -898,7 +887,7 @@
                 <button class="close-modal" id="closeModalBtn">&times;</button>
             </div>
             <div class="modal-body">
-                <p class="payment-description" id="paymentDescription">Select your package and pay securely with Card or M-Pesa via Paystack</p>
+                <p class="payment-description" id="paymentDescription">Select your package and pay securely with Card or M-Pesa</p>
                 
                 <div id="packageOptionsList" class="package-list"></div>
                 
@@ -908,7 +897,7 @@
                 </div>
                 
                 <button id="payButton" class="pay-button">
-                    <i class="fas fa-credit-card"></i> Pay with Paystack
+                    <i class="fas fa-credit-card"></i> Lipa na Mpesa / Card
                 </button>
                 
                 <div class="divider">
@@ -930,7 +919,7 @@
     <div id="successModal" class="modal-overlay">
         <div class="success-modal">
             <div class="modal-header">
-                <h3><i class="fas fa-check-circle"></i> Payment Successful!</h3>
+                <h3 id="successModalTitle"><i class="fas fa-check-circle"></i> Payment Successful!</h3>
                 <button class="close-modal" id="closeSuccessModalBtn">&times;</button>
             </div>
             <div class="modal-body">
@@ -956,422 +945,367 @@
         </div>
     </div>
 
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    
     <script>
-        // ========== PAYSTACK INTEGRATION - FULLY WORKING FOR APP ==========
-        (function() {
-            let auth, db, firebaseAuth, firebaseFirestore;
-            
-            const waitForFirebase = setInterval(() => {
-                if (window.auth && window.db && window.firebaseAuth && window.firebaseFirestore) {
-                    clearInterval(waitForFirebase);
-                    initApp();
-                }
-            }, 100);
-            
-            function initApp() {
-                auth = window.auth;
-                db = window.db;
-                firebaseAuth = window.firebaseAuth;
-                firebaseFirestore = window.firebaseFirestore;
-                
-                const { 
-                    createUserWithEmailAndPassword, 
-                    signInWithEmailAndPassword, 
-                    signOut,
-                    sendPasswordResetEmail,
-                    onAuthStateChanged,
-                    updateProfile
-                } = firebaseAuth;
-                const { collection, addDoc, setDoc, doc, serverTimestamp } = firebaseFirestore;
-                
-                let activityLogs = JSON.parse(localStorage.getItem('nexus_activity') || '[]');
-                
-                function addLog(msg) {
-                    const log = { id: Date.now(), text: msg, time: new Date().toLocaleTimeString() };
-                    activityLogs.unshift(log);
-                    if (activityLogs.length > 30) activityLogs.pop();
-                    localStorage.setItem('nexus_activity', JSON.stringify(activityLogs));
-                    renderLogs();
-                }
-                
-                function renderLogs() {
-                    const container = document.getElementById('logList');
-                    if (!container) return;
-                    if (activityLogs.length === 0) {
-                        container.innerHTML = '<div class="log-item"><i class="fas fa-info-circle"></i><span>No activity</span></div>';
-                        return;
-                    }
-                    container.innerHTML = activityLogs.slice(0, 20).map(l => `
-                        <div class="log-item"><i class="fas fa-exchange-alt"></i><span>${l.text}</span><span class="log-time">${l.time}</span></div>
-                    `).join('');
-                }
-                
-                function showNotification(msg, type) {
-                    const c = document.getElementById('notifContainer');
-                    const n = document.createElement('div');
-                    n.className = 'notification';
-                    n.style.borderLeftColor = type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#f39c12';
-                    n.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i> ${msg}`;
-                    c.appendChild(n);
-                    setTimeout(() => n.remove(), 3500);
-                }
-                
-                const authCard = document.getElementById('authCard');
-                const dashCard = document.getElementById('dashboardCard');
-                const loginPanel = document.getElementById('loginPanel');
-                const signupPanel = document.getElementById('signupPanel');
-                const loadingOverlay = document.getElementById('loadingOverlay');
-                
-                function showLoading(text = 'Loading...') {
-                    document.getElementById('loadingText').textContent = text;
-                    loadingOverlay.classList.add('active');
-                }
-                
-                function hideLoading() {
-                    loadingOverlay.classList.remove('active');
-                }
-                
-                function showDashboard(user) {
-                    authCard.classList.add('hidden');
-                    dashCard.classList.remove('hidden');
-                    const displayName = user.displayName || user.email.split('@')[0];
-                    document.getElementById('dashboardUserName').innerText = displayName;
-                    document.getElementById('userEmail').innerText = user.email;
-                    document.getElementById('userAvatar').textContent = displayName.charAt(0).toUpperCase();
-                    renderLogs();
-                    addLog(`Dashboard opened — ${displayName}`);
-                }
-                
-                function showAuth() {
-                    authCard.classList.remove('hidden');
-                    dashCard.classList.add('hidden');
-                    loginPanel.classList.remove('hidden');
-                    signupPanel.classList.add('hidden');
-                }
-                
-                document.getElementById('signupBtn').onclick = async () => {
-                    const name = document.getElementById('signupName').value.trim();
-                    const email = document.getElementById('signupEmail').value.trim();
-                    const password = document.getElementById('signupPassword').value;
-                    const confirm = document.getElementById('signupConfirm').value;
-                    if (!name) return showNotification('Name is required', 'error');
-                    if (password !== confirm) return showNotification('Passwords do not match', 'error');
-                    if (password.length < 6) return showNotification('Password must be at least 6 characters', 'error');
-                    showLoading('Creating account...');
-                    try {
-                        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                        await updateProfile(userCredential.user, { displayName: name });
-                        await setDoc(doc(db, 'users', userCredential.user.uid), { name, email, createdAt: serverTimestamp() });
-                        showNotification('Account created!', 'success');
-                        document.getElementById('signupName').value = '';
-                        document.getElementById('signupEmail').value = '';
-                        document.getElementById('signupPassword').value = '';
-                        document.getElementById('signupConfirm').value = '';
-                    } catch (error) {
-                        showNotification(error.message, 'error');
-                    } finally {
-                        hideLoading();
-                    }
-                };
-                
-                document.getElementById('loginBtn').onclick = async () => {
-                    const email = document.getElementById('loginEmail').value.trim();
-                    const password = document.getElementById('loginPassword').value;
-                    if (!email || !password) return showNotification('Enter email and password', 'error');
-                    showLoading('Signing in...');
-                    try {
-                        await signInWithEmailAndPassword(auth, email, password);
-                        document.getElementById('loginEmail').value = '';
-                        document.getElementById('loginPassword').value = '';
-                    } catch (error) {
-                        showNotification(error.message, 'error');
-                    } finally {
-                        hideLoading();
-                    }
-                };
-                
-                document.getElementById('logoutBtnDash').onclick = async () => {
-                    try {
-                        await signOut(auth);
-                        showNotification('Signed out', 'success');
-                    } catch (error) {
-                        showNotification(error.message, 'error');
-                    }
-                };
-                
-                document.getElementById('forgotPasswordLink').onclick = async () => {
-                    const email = document.getElementById('loginEmail').value.trim();
-                    if (!email) return showNotification('Enter your email address', 'error');
-                    try {
-                        await sendPasswordResetEmail(auth, email);
-                        showNotification('Password reset email sent!', 'success');
-                    } catch (error) {
-                        showNotification(error.message, 'error');
-                    }
-                };
-                
-                document.getElementById('showSignupLink').onclick = () => { loginPanel.classList.add('hidden'); signupPanel.classList.remove('hidden'); };
-                document.getElementById('showLoginLink').onclick = () => { loginPanel.classList.remove('hidden'); signupPanel.classList.add('hidden'); };
-                
-                onAuthStateChanged(auth, (user) => {
-                    hideLoading();
-                    if (user) showDashboard(user);
-                    else showAuth();
-                });
-                
-                document.getElementById('clearLogBtn').onclick = () => {
-                    activityLogs = [];
-                    localStorage.setItem('nexus_activity', JSON.stringify([]));
-                    renderLogs();
-                    showNotification('Logs cleared', 'info');
-                };
-                
-                const PACKAGES = [
-                    { id: '1day', name: '1 Day Pass', days: 1, price: 20 },
-                    { id: '3days', name: '3 Days Pass', days: 3, price: 50 },
-                    { id: '7days', name: '7 Days (1 Week)', days: 7, price: 100 },
-                    { id: '30days', name: '30 Days (Monthly)', days: 30, price: 350 }
-                ];
-                
-                let currentPackage = null;
-                let currentBypass = { name: '', bypassId: '', category: '' };
-                let paymentData = null;
-                let isProcessing = false;
-                
-                function showPaymentModal(bypassName, bypassId, category) {
-                    currentBypass = { name: bypassName, bypassId, category };
-                    document.getElementById('modalTitle').innerHTML = `<i class="fas fa-shopping-cart"></i> Pay for ${bypassName}`;
-                    const container = document.getElementById('packageOptionsList');
-                    container.innerHTML = '';
-                    PACKAGES.forEach(pkg => {
-                        const div = document.createElement('div');
-                        div.className = 'package-option';
-                        div.innerHTML = `<div class="package-info"><h4>${pkg.name}</h4><p>${pkg.days} day(s) access</p></div><div class="package-price">KES ${pkg.price}</div>`;
-                        div.onclick = () => {
-                            document.querySelectorAll('.package-option').forEach(el => el.classList.remove('selected'));
-                            div.classList.add('selected');
-                            currentPackage = pkg;
-                            document.getElementById('totalAmount').innerHTML = `<i class="fas fa-coins"></i> KES ${pkg.price}`;
-                        };
-                        container.appendChild(div);
-                    });
-                    document.getElementById('paymentModal').classList.add('active');
-                }
-                
-                document.querySelectorAll('.bypass-option').forEach(opt => {
-                    opt.onclick = () => {
-                        const bypassId = opt.dataset.bypass;
-                        const bypassName = opt.innerText.trim();
-                        const category = opt.dataset.category;
-                        showPaymentModal(bypassName, bypassId, category);
-                    };
-                });
-                
-                document.getElementById('closeModalBtn').onclick = () => { document.getElementById('paymentModal').classList.remove('active'); };
-                document.getElementById('closeSuccessModalBtn').onclick = () => { document.getElementById('successModal').classList.remove('active'); };
-                
-                const hardwareInput = document.getElementById('hardwareId');
-                const charCounter = document.getElementById('charCounter');
-                const activateBtn = document.getElementById('activateAndSendBtn');
-                
-                hardwareInput.oninput = function() {
-                    const len = this.value.length;
-                    charCounter.textContent = `${len}/40 characters`;
-                    if (len === 40) {
-                        charCounter.classList.add('valid');
-                        activateBtn.disabled = false;
-                    } else {
-                        charCounter.classList.remove('valid');
-                        activateBtn.disabled = true;
-                    }
-                };
-                
-                // ========== WORKING PAYSTACK PAYMENT ==========
-                const PAYSTACK_KEY = 'pk_live_16142fe1295bff6eab1ec0888895754f8e90a96b';
-                
-                function waitForPaystack() {
-                    return new Promise((resolve) => {
-                        if (typeof PaystackPop !== 'undefined') {
-                            resolve();
-                        } else {
-                            let checkInterval = setInterval(() => {
-                                if (typeof PaystackPop !== 'undefined') {
-                                    clearInterval(checkInterval);
-                                    resolve();
-                                }
-                            }, 100);
-                            setTimeout(() => {
-                                clearInterval(checkInterval);
-                                resolve();
-                            }, 5000);
-                        }
-                    });
-                }
-                
-                document.getElementById('payButton').onclick = async () => {
-                    if (isProcessing) {
-                        showNotification('Payment in progress...', 'info');
-                        return;
-                    }
-                    
-                    if (!currentPackage) {
-                        showNotification('Please select a package first', 'error');
-                        return;
-                    }
-                    
-                    const user = auth.currentUser;
-                    if (!user) {
-                        showNotification('Please login to continue', 'error');
-                        return;
-                    }
-                    
-                    isProcessing = true;
-                    const payBtn = document.getElementById('payButton');
-                    payBtn.disabled = true;
-                    payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading Paystack...';
-                    
-                    showLoading('Initializing Paystack...');
-                    
-                    try {
-                        await waitForPaystack();
-                        
-                        if (typeof PaystackPop === 'undefined') {
-                            throw new Error('Paystack failed to load');
-                        }
-                        
-                        hideLoading();
-                        
-                        const email = user.email;
-                        const amount = currentPackage.price;
-                        const reference = 'NX-' + Date.now() + '-' + Math.random().toString(36).substr(2, 8).toUpperCase();
-                        
-                        const handler = PaystackPop.setup({
-                            key: PAYSTACK_KEY,
-                            email: email,
-                            amount: amount * 100,
-                            currency: 'KES',
-                            ref: reference,
-                            metadata: {
-                                custom_fields: [
-                                    {
-                                        display_name: "Customer Name",
-                                        variable_name: "customer_name",
-                                        value: user.displayName || email.split('@')[0]
-                                    },
-                                    {
-                                        display_name: "Bypass Type",
-                                        variable_name: "bypass_type",
-                                        value: currentBypass.name
-                                    },
-                                    {
-                                        display_name: "Package",
-                                        variable_name: "package",
-                                        value: currentPackage.name
-                                    }
-                                ]
-                            },
-                            callback: (response) => {
-                                isProcessing = false;
-                                payBtn.disabled = false;
-                                payBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay with Paystack';
-                                
-                                addLog(`Payment successful: ${currentBypass.name} - ${currentPackage.name} | Ref: ${response.reference}`);
-                                document.getElementById('paymentModal').classList.remove('active');
-                                
-                                const now = new Date();
-                                paymentData = {
-                                    userName: user.displayName || email.split('@')[0],
-                                    userEmail: email,
-                                    bypassName: currentBypass.name,
-                                    bypassCategory: currentBypass.category,
-                                    packageName: currentPackage.name,
-                                    packageDays: currentPackage.days,
-                                    amount: amount,
-                                    paymentReference: response.reference,
-                                    date: now.toLocaleDateString('en-GB'),
-                                    time: now.toLocaleTimeString('en-GB')
-                                };
-                                
-                                const detailsHtml = `
-                                    <div class="detail-row"><span class="detail-label">Bypass Type:</span><span class="detail-value">${currentBypass.name}</span></div>
-                                    <div class="detail-row"><span class="detail-label">Package:</span><span class="detail-value">${currentPackage.name}</span></div>
-                                    <div class="detail-row"><span class="detail-label">Duration:</span><span class="detail-value">${currentPackage.days} day(s)</span></div>
-                                    <div class="detail-row"><span class="detail-label">Amount Paid:</span><span class="detail-value">KES ${amount}</span></div>
-                                    <div class="detail-row"><span class="detail-label">Payment Ref:</span><span class="detail-value">${response.reference}</span></div>
-                                    <div class="detail-row"><span class="detail-label">Date & Time:</span><span class="detail-value">${paymentData.date} ${paymentData.time}</span></div>
-                                `;
-                                
-                                document.getElementById('purchaseDetails').innerHTML = detailsHtml;
-                                document.getElementById('successModal').classList.add('active');
-                                showNotification('Payment successful!', 'success');
-                            },
-                            onClose: () => {
-                                isProcessing = false;
-                                payBtn.disabled = false;
-                                payBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay with Paystack';
-                                hideLoading();
-                                showNotification('Payment window closed', 'info');
-                            }
-                        });
-                        
-                        handler.openIframe();
-                        
-                    } catch (error) {
-                        isProcessing = false;
-                        payBtn.disabled = false;
-                        payBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay with Paystack';
-                        hideLoading();
-                        console.error('Payment error:', error);
-                        showNotification('Payment initialization failed. Please check your internet connection.', 'error');
-                    }
-                };
-                
-                activateBtn.onclick = async () => {
-                    const hardwareId = hardwareInput.value.trim();
-                    if (hardwareId.length !== 40) {
-                        showNotification('Hardware ID must be exactly 40 characters', 'error');
-                        return;
-                    }
-                    
-                    const message = `🔐 *NEXUS BYPASS - ACTIVATION* 🔐%0A%0A` +
-                        `👤 *Customer*%0AName: ${paymentData.userName}%0AEmail: ${paymentData.userEmail}%0A%0A` +
-                        `📡 *Bypass*%0AType: ${paymentData.bypassName}%0ACategory: ${paymentData.bypassCategory}%0A%0A` +
-                        `📦 *Package*%0A${paymentData.packageName}%0ADuration: ${paymentData.packageDays} day(s)%0AAmount: KES ${paymentData.amount}%0A%0A` +
-                        `💳 *Payment*%0ARef: ${paymentData.paymentReference}%0ADate: ${paymentData.date}%0ATime: ${paymentData.time}%0A%0A` +
-                        `🔧 *Hardware ID*%0A\`${hardwareId}\`%0A%0A✅ *Awaiting Activation*`;
-                    
-                    try {
-                        const user = auth.currentUser;
-                        if (user) {
-                            await addDoc(collection(db, 'activations'), { 
-                                userId: user.uid, 
-                                ...paymentData, 
-                                hardwareId, 
-                                activatedAt: serverTimestamp() 
-                            });
-                        }
-                    } catch (e) { 
-                        console.error('Save error:', e); 
-                    }
-                    
-                    window.open(`https://wa.me/+254700000000?text=${message}`, '_blank');
-                    addLog(`Activation sent: ${paymentData.bypassName} - ${paymentData.packageName}`);
-                    showNotification('Activation request sent to WhatsApp!', 'success');
-                    document.getElementById('successModal').classList.remove('active');
-                };
-                
-                document.getElementById('paypalButton').onclick = () => showNotification('PayPal coming soon', 'info');
-                document.getElementById('stripeButton').onclick = () => showNotification('Stripe coming soon', 'info');
-                
-                window.onclick = (e) => {
-                    if (e.target === document.getElementById('paymentModal')) document.getElementById('paymentModal').classList.remove('active');
-                    if (e.target === document.getElementById('successModal')) document.getElementById('successModal').classList.remove('active');
-                };
-                
-                console.log('NEXUS BYPASS: Paystack version ready');
-                showNotification('Welcome to NEXUS BYPASS!', 'success');
+        // Wait for Firebase to initialize
+        setTimeout(() => {
+            if (!window.auth) {
+                console.error('Firebase not initialized');
+                return;
             }
-        })();
+            
+            const auth = window.auth;
+            const db = window.db;
+            const { 
+                createUserWithEmailAndPassword, 
+                signInWithEmailAndPassword, 
+                signOut,
+                sendPasswordResetEmail,
+                onAuthStateChanged,
+                updateProfile
+            } = window.firebaseAuth;
+            const { collection, addDoc, setDoc, doc, serverTimestamp } = window.firebaseFirestore;
+            
+            // Activity log
+            let activityLogs = JSON.parse(localStorage.getItem('nexus_activity') || '[]');
+            
+            function addLog(msg) {
+                const log = { id: Date.now(), text: msg, time: new Date().toLocaleTimeString() };
+                activityLogs.unshift(log);
+                if (activityLogs.length > 30) activityLogs.pop();
+                localStorage.setItem('nexus_activity', JSON.stringify(activityLogs));
+                renderLogs();
+            }
+            
+            function renderLogs() {
+                const container = document.getElementById('logList');
+                if (!container) return;
+                if (activityLogs.length === 0) {
+                    container.innerHTML = '<div class="log-item"><i class="fas fa-info-circle"></i><span>No activity</span></div>';
+                    return;
+                }
+                container.innerHTML = activityLogs.slice(0, 20).map(l => `
+                    <div class="log-item"><i class="fas fa-exchange-alt"></i><span>${l.text}</span><span class="log-time">${l.time}</span></div>
+                `).join('');
+            }
+            
+            function showNotification(msg, type) {
+                const c = document.getElementById('notifContainer');
+                const n = document.createElement('div');
+                n.className = 'notification';
+                n.style.borderLeftColor = type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#f39c12';
+                n.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i> ${msg}`;
+                c.appendChild(n);
+                setTimeout(() => n.remove(), 3500);
+            }
+            
+            const authCard = document.getElementById('authCard');
+            const dashCard = document.getElementById('dashboardCard');
+            const loginPanel = document.getElementById('loginPanel');
+            const signupPanel = document.getElementById('signupPanel');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            
+            function showLoading(text = 'Loading...') {
+                document.getElementById('loadingText').textContent = text;
+                loadingOverlay.classList.add('active');
+            }
+            
+            function hideLoading() {
+                loadingOverlay.classList.remove('active');
+            }
+            
+            function showDashboard(user) {
+                authCard.classList.add('hidden');
+                dashCard.classList.remove('hidden');
+                
+                const displayName = user.displayName || user.email.split('@')[0];
+                document.getElementById('dashboardUserName').innerText = displayName;
+                document.getElementById('userEmail').innerText = user.email;
+                document.getElementById('userAvatar').textContent = displayName.charAt(0).toUpperCase();
+                
+                renderLogs();
+                addLog(`Dashboard opened — ${displayName}`);
+            }
+            
+            function showAuth() {
+                authCard.classList.remove('hidden');
+                dashCard.classList.add('hidden');
+                loginPanel.classList.remove('hidden');
+                signupPanel.classList.add('hidden');
+            }
+            
+            // Signup
+            document.getElementById('signupBtn').onclick = async () => {
+                const name = document.getElementById('signupName').value.trim();
+                const email = document.getElementById('signupEmail').value.trim();
+                const password = document.getElementById('signupPassword').value;
+                const confirm = document.getElementById('signupConfirm').value;
+                
+                if (!name) return showNotification('Name is required', 'error');
+                if (password !== confirm) return showNotification('Passwords do not match', 'error');
+                if (password.length < 6) return showNotification('Password must be at least 6 characters', 'error');
+                
+                showLoading('Creating account...');
+                
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(userCredential.user, { displayName: name });
+                    
+                    await setDoc(doc(db, 'users', userCredential.user.uid), {
+                        name, email, createdAt: serverTimestamp()
+                    });
+                    
+                    showNotification('Account created!', 'success');
+                    document.getElementById('signupName').value = '';
+                    document.getElementById('signupEmail').value = '';
+                    document.getElementById('signupPassword').value = '';
+                    document.getElementById('signupConfirm').value = '';
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            };
+            
+            // Login
+            document.getElementById('loginBtn').onclick = async () => {
+                const email = document.getElementById('loginEmail').value.trim();
+                const password = document.getElementById('loginPassword').value;
+                
+                if (!email || !password) return showNotification('Enter email and password', 'error');
+                
+                showLoading('Signing in...');
+                
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    document.getElementById('loginEmail').value = '';
+                    document.getElementById('loginPassword').value = '';
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            };
+            
+            // Logout
+            document.getElementById('logoutBtnDash').onclick = async () => {
+                try {
+                    await signOut(auth);
+                    showNotification('Signed out', 'success');
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                }
+            };
+            
+            // Forgot password
+            document.getElementById('forgotPasswordLink').onclick = async () => {
+                const email = document.getElementById('loginEmail').value.trim();
+                if (!email) return showNotification('Enter your email address', 'error');
+                
+                try {
+                    await sendPasswordResetEmail(auth, email);
+                    showNotification('Password reset email sent!', 'success');
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                }
+            };
+            
+            // Toggle login/signup
+            document.getElementById('showSignupLink').onclick = () => {
+                loginPanel.classList.add('hidden');
+                signupPanel.classList.remove('hidden');
+            };
+            
+            document.getElementById('showLoginLink').onclick = () => {
+                loginPanel.classList.remove('hidden');
+                signupPanel.classList.add('hidden');
+            };
+            
+            // Auth state observer
+            onAuthStateChanged(auth, (user) => {
+                hideLoading();
+                if (user) {
+                    showDashboard(user);
+                } else {
+                    showAuth();
+                }
+            });
+            
+            // Clear logs
+            document.getElementById('clearLogBtn').onclick = () => {
+                activityLogs = [];
+                localStorage.setItem('nexus_activity', JSON.stringify([]));
+                renderLogs();
+                showNotification('Logs cleared', 'info');
+            };
+            
+            // Package pricing
+            const PACKAGES = [
+                { id: '1day', name: '1 Day Pass', days: 1, price: 20 },
+                { id: '3days', name: '3 Days Pass', days: 3, price: 50 },
+                { id: '7days', name: '7 Days (1 Week)', days: 7, price: 100 },
+                { id: '30days', name: '30 Days (Monthly)', days: 30, price: 350 }
+            ];
+            
+            let currentPackage = null;
+            let currentBypass = { name: '', bypassId: '', category: '' };
+            let paymentData = null;
+            
+            function showPaymentModal(bypassName, bypassId, category) {
+                currentBypass = { name: bypassName, bypassId, category };
+                document.getElementById('modalTitle').innerText = `Buy Package: ${bypassName}`;
+                
+                const container = document.getElementById('packageOptionsList');
+                container.innerHTML = '';
+                
+                PACKAGES.forEach(pkg => {
+                    const div = document.createElement('div');
+                    div.className = 'package-option';
+                    div.innerHTML = `<div class="package-info"><h4>${pkg.name}</h4><p>${pkg.days} day(s) access</p></div><div class="package-price">KES ${pkg.price}</div>`;
+                    div.onclick = () => {
+                        document.querySelectorAll('.package-option').forEach(el => el.classList.remove('selected'));
+                        div.classList.add('selected');
+                        currentPackage = pkg;
+                        document.getElementById('totalAmount').innerText = `KES ${pkg.price}`;
+                    };
+                    container.appendChild(div);
+                });
+                
+                document.getElementById('paymentModal').classList.add('active');
+            }
+            
+            document.querySelectorAll('.bypass-option').forEach(opt => {
+                opt.onclick = () => {
+                    const bypassId = opt.dataset.bypass;
+                    const bypassName = opt.innerText.trim();
+                    const category = opt.dataset.category;
+                    showPaymentModal(bypassName, bypassId, category);
+                };
+            });
+            
+            document.getElementById('closeModalBtn').onclick = () => {
+                document.getElementById('paymentModal').classList.remove('active');
+            };
+            
+            document.getElementById('closeSuccessModalBtn').onclick = () => {
+                document.getElementById('successModal').classList.remove('active');
+            };
+            
+            // Hardware ID validation
+            const hardwareInput = document.getElementById('hardwareId');
+            const charCounter = document.getElementById('charCounter');
+            const activateBtn = document.getElementById('activateAndSendBtn');
+            
+            hardwareInput.oninput = function() {
+                const len = this.value.length;
+                charCounter.textContent = `${len}/40 characters`;
+                if (len === 40) {
+                    charCounter.classList.add('valid');
+                    activateBtn.disabled = false;
+                } else {
+                    charCounter.classList.remove('valid');
+                    activateBtn.disabled = true;
+                }
+            };
+            
+            // Paystack payment
+            document.getElementById('payButton').onclick = () => {
+                if (!currentPackage) return showNotification('Select a package', 'error');
+                
+                const user = auth.currentUser;
+                const email = user?.email || 'customer@nexus.com';
+                
+                const handler = PaystackPop.setup({
+                    key: 'pk_live_16142fe1295bff6eab1ec0888895754f8e90a96b',
+                    email: email,
+                    amount: currentPackage.price * 100,
+                    currency: 'KES',
+                    ref: 'NX-' + Date.now(),
+                    callback: (response) => {
+                        addLog(`Payment successful: ${currentBypass.name} - ${currentPackage.name}`);
+                        document.getElementById('paymentModal').classList.remove('active');
+                        
+                        const now = new Date();
+                        paymentData = {
+                            userName: user?.displayName || email.split('@')[0],
+                            userEmail: email,
+                            bypassName: currentBypass.name,
+                            bypassCategory: currentBypass.category,
+                            packageName: currentPackage.name,
+                            packageDays: currentPackage.days,
+                            amount: currentPackage.price,
+                            paymentReference: response.reference,
+                            date: now.toLocaleDateString('en-GB'),
+                            time: now.toLocaleTimeString('en-GB')
+                        };
+                        
+                        const detailsHtml = `
+                            <div class="detail-row"><span class="detail-label">Bypass Type:</span><span class="detail-value">${currentBypass.name}</span></div>
+                            <div class="detail-row"><span class="detail-label">Package:</span><span class="detail-value">${currentPackage.name}</span></div>
+                            <div class="detail-row"><span class="detail-label">Duration:</span><span class="detail-value">${currentPackage.days} day(s)</span></div>
+                            <div class="detail-row"><span class="detail-label">Amount Paid:</span><span class="detail-value">KES ${currentPackage.price}</span></div>
+                            <div class="detail-row"><span class="detail-label">Payment Ref:</span><span class="detail-value">${response.reference}</span></div>
+                            <div class="detail-row"><span class="detail-label">Date & Time:</span><span class="detail-value">${paymentData.date} ${paymentData.time}</span></div>
+                        `;
+                        
+                        document.getElementById('purchaseDetails').innerHTML = detailsHtml;
+                        document.getElementById('successModal').classList.add('active');
+                    },
+                    onClose: () => showNotification('Payment cancelled', 'info')
+                });
+                
+                handler.openIframe();
+            };
+            
+            // Send to WhatsApp
+            activateBtn.onclick = async () => {
+                const hardwareId = hardwareInput.value.trim();
+                if (hardwareId.length !== 40) return showNotification('Hardware ID must be 40 characters', 'error');
+                
+                const message = `🔐 *NEXUS BYPASS - ACTIVATION* 🔐%0A%0A` +
+                    `👤 *Customer*%0AName: ${paymentData.userName}%0AEmail: ${paymentData.userEmail}%0A%0A` +
+                    `📡 *Bypass*%0AType: ${paymentData.bypassName}%0ACategory: ${paymentData.bypassCategory}%0A%0A` +
+                    `📦 *Package*%0A${paymentData.packageName}%0ADuration: ${paymentData.packageDays} day(s)%0AAmount: KES ${paymentData.amount}%0A%0A` +
+                    `💳 *Payment*%0ARef: ${paymentData.paymentReference}%0ADate: ${paymentData.date}%0ATime: ${paymentData.time}%0A%0A` +
+                    `🔧 *Hardware ID*%0A\`${hardwareId}\`%0A%0A✅ *Awaiting Activation*`;
+                
+                try {
+                    const user = auth.currentUser;
+                    if (user) {
+                        await addDoc(collection(db, 'activations'), {
+                            userId: user.uid,
+                            ...paymentData,
+                            hardwareId,
+                            activatedAt: serverTimestamp()
+                        });
+                    }
+                } catch (e) {
+                    console.error('Save error:', e);
+                }
+                
+                window.open(`https://wa.me/+584265907014?text=${message}`, '_blank');
+                addLog(`Activated: ${paymentData.bypassName} - ${paymentData.packageName}`);
+                showNotification('Activation sent!', 'success');
+                document.getElementById('successModal').classList.remove('active');
+            };
+            
+            // PayPal/Stripe placeholders
+            document.getElementById('paypalButton').onclick = () => showNotification('PayPal integration coming soon', 'info');
+            document.getElementById('stripeButton').onclick = () => showNotification('Stripe integration coming soon', 'info');
+            
+            // Close modals on outside click
+            window.onclick = (e) => {
+                if (e.target === document.getElementById('paymentModal')) {
+                    document.getElementById('paymentModal').classList.remove('active');
+                }
+                if (e.target === document.getElementById('successModal')) {
+                    document.getElementById('successModal').classList.remove('active');
+                }
+            };
+            
+            console.log('App initialized successfully');
+        }, 500);
     </script>
 </body>
 </html>
