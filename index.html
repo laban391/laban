@@ -8,8 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Paystack Inline JS -->
-    <script src="https://js.paystack.co/v1/inline.js"></script>
     <!-- Firebase Modular SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -741,6 +739,18 @@
             padding: 0 10px;
             font-size: 0.9rem;
         }
+
+        /* App-specific optimizations */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: radial-gradient(ellipse at 20% 30%, #0a0f1f, #020617);
+            }
+        }
+        
+        /* Prevent zoom on input focus in WebView */
+        input, select, textarea {
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -957,9 +967,46 @@
     </div>
 
     <script>
-        // Main application script - FULLY INTEGRATED PAYSTACK WITH LIVE KEY
+        // ========== APP-OPTIMIZED PAYMENT HANDLER ==========
+        // This version loads Paystack faster and handles WebView-specific issues
+        
         (function() {
             let auth, db, firebaseAuth, firebaseFirestore;
+            let paystackReady = false;
+            
+            // Preload Paystack script dynamically with better WebView support
+            function loadPaystackScript() {
+                return new Promise((resolve, reject) => {
+                    if (typeof PaystackPop !== 'undefined') {
+                        paystackReady = true;
+                        resolve();
+                        return;
+                    }
+                    
+                    const script = document.createElement('script');
+                    script.src = 'https://js.paystack.co/v1/inline.js';
+                    script.async = true;
+                    script.onload = () => {
+                        console.log('Paystack loaded successfully');
+                        paystackReady = true;
+                        resolve();
+                    };
+                    script.onerror = () => {
+                        console.error('Failed to load Paystack');
+                        reject(new Error('Paystack failed to load'));
+                    };
+                    document.head.appendChild(script);
+                    
+                    // Timeout fallback (10 seconds for WebView)
+                    setTimeout(() => {
+                        if (typeof PaystackPop === 'undefined') {
+                            reject(new Error('Paystack timeout'));
+                        } else {
+                            resolve();
+                        }
+                    }, 10000);
+                });
+            }
             
             // Wait for Firebase
             const waitForFirebase = setInterval(() => {
@@ -969,11 +1016,14 @@
                 }
             }, 100);
             
-            function initApp() {
+            async function initApp() {
                 auth = window.auth;
                 db = window.db;
                 firebaseAuth = window.firebaseAuth;
                 firebaseFirestore = window.firebaseFirestore;
+                
+                // Preload Paystack in background
+                loadPaystackScript().catch(err => console.warn('Paystack preload warning:', err.message));
                 
                 const { 
                     createUserWithEmailAndPassword, 
@@ -1191,11 +1241,16 @@
                     }
                 };
                 
-                // ========== PAYSTACK INTEGRATION WITH LIVE KEY ==========
-                // YOUR LIVE PAYSTACK PUBLIC KEY
+                // ========== APP-OPTIMIZED PAYMENT (FIXED FOR WEBVIEW) ==========
                 const PAYSTACK_PUBLIC_KEY = 'pk_live_16142fe1295bff6eab1ec0888895754f8e90a96b';
+                let isProcessingPayment = false;
                 
-                document.getElementById('payButton').onclick = () => {
+                document.getElementById('payButton').onclick = async () => {
+                    if (isProcessingPayment) {
+                        showNotification('Payment already in progress...', 'info');
+                        return;
+                    }
+                    
                     if (!currentPackage) {
                         showNotification('Please select a package first', 'error');
                         return;
@@ -1207,23 +1262,30 @@
                         return;
                     }
                     
-                    const email = user.email;
-                    const amount = currentPackage.price;
-                    const reference = 'NX-' + Date.now() + '-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+                    isProcessingPayment = true;
+                    const payBtn = document.getElementById('payButton');
+                    payBtn.disabled = true;
+                    payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading Payment...';
                     
-                    // Check if Paystack is loaded
-                    if (typeof PaystackPop === 'undefined') {
-                        showNotification('Payment system is loading. Please try again in a moment.', 'error');
-                        return;
-                    }
-                    
-                    showLoading('Opening secure payment window...');
+                    showLoading('Preparing secure payment...');
                     
                     try {
+                        // Ensure Paystack is loaded (with timeout for WebView)
+                        if (!paystackReady) {
+                            showLoading('Loading payment gateway...');
+                            await loadPaystackScript();
+                        }
+                        
+                        hideLoading();
+                        
+                        const email = user.email;
+                        const amount = currentPackage.price;
+                        const reference = 'NX-' + Date.now() + '-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+                        
                         const handler = PaystackPop.setup({
                             key: PAYSTACK_PUBLIC_KEY,
                             email: email,
-                            amount: amount * 100, // Convert to kobo/cents
+                            amount: amount * 100,
                             currency: 'KES',
                             ref: reference,
                             metadata: {
@@ -1246,8 +1308,10 @@
                                 ]
                             },
                             callback: (response) => {
-                                hideLoading();
-                                // Payment successful
+                                isProcessingPayment = false;
+                                payBtn.disabled = false;
+                                payBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay with Paystack';
+                                
                                 addLog(`Payment successful: ${currentBypass.name} - ${currentPackage.name} | Ref: ${response.reference}`);
                                 document.getElementById('paymentModal').classList.remove('active');
                                 
@@ -1279,18 +1343,23 @@
                                 showNotification('Payment completed successfully!', 'success');
                             },
                             onClose: () => {
+                                isProcessingPayment = false;
+                                payBtn.disabled = false;
+                                payBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay with Paystack';
                                 hideLoading();
                                 showNotification('Payment window closed', 'info');
                             }
                         });
                         
                         handler.openIframe();
-                        hideLoading(); // Hide loading after opening the iframe
                         
                     } catch (error) {
+                        isProcessingPayment = false;
+                        payBtn.disabled = false;
+                        payBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay with Paystack';
                         hideLoading();
                         console.error('Payment error:', error);
-                        showNotification('Unable to initialize payment. Please check your internet connection and try again.', 'error');
+                        showNotification('Payment initialization failed. Please check your connection and try again.', 'error');
                     }
                 };
                 
@@ -1323,7 +1392,7 @@
                     }
                     
                     window.open(`https://wa.me/+584265907014?text=${message}`, '_blank');
-                    addLog(`Activation sent: ${paymentData.bypassName} - ${paymentData.packageName} | HWID: ${hardwareId.substring(0,8)}...`);
+                    addLog(`Activation sent: ${paymentData.bypassName} - ${paymentData.packageName}`);
                     showNotification('Activation request sent to WhatsApp!', 'success');
                     document.getElementById('successModal').classList.remove('active');
                 };
@@ -1336,7 +1405,7 @@
                     if (e.target === document.getElementById('successModal')) document.getElementById('successModal').classList.remove('active');
                 };
                 
-                console.log('NEXUS BYPASS: Fully functional with Paystack live key integrated');
+                console.log('NEXUS BYPASS: App-optimized version ready');
                 showNotification('Welcome to NEXUS BYPASS!', 'success');
             }
         })();
