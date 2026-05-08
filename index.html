@@ -1189,71 +1189,105 @@
                     }
                 };
                 
-                // IMPROVED PAYMENT HANDLER - Faster and more reliable
-                document.getElementById('payButton').onclick = async () => {
-                    if (!currentPackage) {
-                        showNotification('Please select a package first', 'error');
-                        return;
+                // IMPROVED PAYMENT HANDLER - REAL Paystack Integration
+document.getElementById('payButton').onclick = async () => {
+    if (!currentPackage) {
+        showNotification('Please select a package first', 'error');
+        return;
+    }
+    
+    const user = auth.currentUser;
+    if (!user) {
+        showNotification('Please login to continue', 'error');
+        return;
+    }
+    
+    const email = user.email;
+    const amount = currentPackage.price;
+    const reference = 'NX-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+    
+    // Make sure Paystack is loaded
+    if (typeof PaystackPop === 'undefined') {
+        showNotification('Payment system loading, please try again', 'error');
+        return;
+    }
+    
+    showLoading('Opening payment window...');
+    
+    try {
+        const handler = PaystackPop.setup({
+            key: 'pk_live_16142fe1295bff6eab1ec0888895754f8e90a96b',  // YOUR KEY - PUT IT HERE
+            email: email,
+            amount: amount * 100,  // Paystack expects amount in kobo/cents (multiply by 100)
+            currency: 'KES',
+            ref: reference,
+            metadata: {
+                custom_fields: [
+                    {
+                        display_name: "Customer Name",
+                        variable_name: "customer_name",
+                        value: user.displayName || email.split('@')[0]
+                    },
+                    {
+                        display_name: "Bypass Type",
+                        variable_name: "bypass_type",
+                        value: currentBypass.name
+                    },
+                    {
+                        display_name: "Package",
+                        variable_name: "package",
+                        value: currentPackage.name
                     }
-                    
-                    const user = auth.currentUser;
-                    if (!user) {
-                        showNotification('Please login to continue', 'error');
-                        return;
-                    }
-                    
-                    const email = user.email;
-                    const amount = currentPackage.price;
-                    const reference = 'NX-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
-                    
-                    showLoading('Initializing payment gateway...');
-                    
-                    // Short timeout to ensure UI updates
-                    setTimeout(() => {
-                        hideLoading();
-                        
-                        // Simulate successful payment for demo (in production, integrate actual Paystack)
-                        // For actual Paystack integration, uncomment the code below
-                        
-                        // Demo success response
-                        const demoSuccess = confirm(`💰 Payment Demo Mode\n\nPackage: ${currentPackage.name}\nAmount: KES ${amount}\n\nClick OK to simulate successful payment.`);
-                        
-                        if (demoSuccess) {
-                            addLog(`Payment successful: ${currentBypass.name} - ${currentPackage.name}`);
-                            document.getElementById('paymentModal').classList.remove('active');
-                            
-                            const now = new Date();
-                            paymentData = {
-                                userName: user.displayName || email.split('@')[0],
-                                userEmail: email,
-                                bypassName: currentBypass.name,
-                                bypassCategory: currentBypass.category,
-                                packageName: currentPackage.name,
-                                packageDays: currentPackage.days,
-                                amount: amount,
-                                paymentReference: reference,
-                                date: now.toLocaleDateString('en-GB'),
-                                time: now.toLocaleTimeString('en-GB')
-                            };
-                            
-                            const detailsHtml = `
-                                <div class="detail-row"><span class="detail-label">Bypass Type:</span><span class="detail-value">${currentBypass.name}</span></div>
-                                <div class="detail-row"><span class="detail-label">Package:</span><span class="detail-value">${currentPackage.name}</span></div>
-                                <div class="detail-row"><span class="detail-label">Duration:</span><span class="detail-value">${currentPackage.days} day(s)</span></div>
-                                <div class="detail-row"><span class="detail-label">Amount Paid:</span><span class="detail-value">KES ${amount}</span></div>
-                                <div class="detail-row"><span class="detail-label">Payment Ref:</span><span class="detail-value">${reference}</span></div>
-                                <div class="detail-row"><span class="detail-label">Date & Time:</span><span class="detail-value">${paymentData.date} ${paymentData.time}</span></div>
-                            `;
-                            
-                            document.getElementById('purchaseDetails').innerHTML = detailsHtml;
-                            document.getElementById('successModal').classList.add('active');
-                            showNotification('Payment completed successfully!', 'success');
-                        } else {
-                            showNotification('Payment cancelled', 'info');
-                        }
-                        
-                    }, 500);
+                ]
+            },
+            callback: (response) => {
+                hideLoading();
+                // Payment successful
+                addLog(`Payment successful: ${currentBypass.name} - ${currentPackage.name}`);
+                document.getElementById('paymentModal').classList.remove('active');
+                
+                const now = new Date();
+                paymentData = {
+                    userName: user.displayName || email.split('@')[0],
+                    userEmail: email,
+                    bypassName: currentBypass.name,
+                    bypassCategory: currentBypass.category,
+                    packageName: currentPackage.name,
+                    packageDays: currentPackage.days,
+                    amount: amount,
+                    paymentReference: response.reference,
+                    date: now.toLocaleDateString('en-GB'),
+                    time: now.toLocaleTimeString('en-GB')
                 };
+                
+                const detailsHtml = `
+                    <div class="detail-row"><span class="detail-label">Bypass Type:</span><span class="detail-value">${currentBypass.name}</span></div>
+                    <div class="detail-row"><span class="detail-label">Package:</span><span class="detail-value">${currentPackage.name}</span></div>
+                    <div class="detail-row"><span class="detail-label">Duration:</span><span class="detail-value">${currentPackage.days} day(s)</span></div>
+                    <div class="detail-row"><span class="detail-label">Amount Paid:</span><span class="detail-value">KES ${amount}</span></div>
+                    <div class="detail-row"><span class="detail-label">Payment Ref:</span><span class="detail-value">${response.reference}</span></div>
+                    <div class="detail-row"><span class="detail-label">Date & Time:</span><span class="detail-value">${paymentData.date} ${paymentData.time}</span></div>
+                `;
+                
+                document.getElementById('purchaseDetails').innerHTML = detailsHtml;
+                document.getElementById('successModal').classList.add('active');
+                showNotification('Payment completed successfully!', 'success');
+            },
+            onClose: () => {
+                hideLoading();
+                showNotification('Payment window closed', 'info');
+            }
+        });
+        
+        handler.openIframe();
+        hideLoading();
+        
+    } catch (error) {
+        hideLoading();
+        console.error('Payment error:', error);
+        showNotification('Unable to initialize payment. Please try again.', 'error');
+    }
+};
                 
                 activateBtn.onclick = async () => {
                     const hardwareId = hardwareInput.value.trim();
