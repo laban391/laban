@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Paystack Inline JS -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
     <!-- Firebase Modular SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -896,7 +898,7 @@
                 <button class="close-modal" id="closeModalBtn">&times;</button>
             </div>
             <div class="modal-body">
-                <p class="payment-description" id="paymentDescription">Select your package and pay securely</p>
+                <p class="payment-description" id="paymentDescription">Select your package and pay securely with Card or M-Pesa</p>
                 
                 <div id="packageOptionsList" class="package-list"></div>
                 
@@ -906,7 +908,7 @@
                 </div>
                 
                 <button id="payButton" class="pay-button">
-                    <i class="fas fa-credit-card"></i> Pay Now
+                    <i class="fas fa-credit-card"></i> Pay with Paystack
                 </button>
                 
                 <div class="divider">
@@ -955,7 +957,7 @@
     </div>
 
     <script>
-        // Main application script - optimized for faster payments
+        // Main application script - FULLY INTEGRATED PAYSTACK WITH LIVE KEY
         (function() {
             let auth, db, firebaseAuth, firebaseFirestore;
             
@@ -1189,105 +1191,108 @@
                     }
                 };
                 
-                // IMPROVED PAYMENT HANDLER - REAL Paystack Integration
-document.getElementById('payButton').onclick = async () => {
-    if (!currentPackage) {
-        showNotification('Please select a package first', 'error');
-        return;
-    }
-    
-    const user = auth.currentUser;
-    if (!user) {
-        showNotification('Please login to continue', 'error');
-        return;
-    }
-    
-    const email = user.email;
-    const amount = currentPackage.price;
-    const reference = 'NX-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
-    
-    // Make sure Paystack is loaded
-    if (typeof PaystackPop === 'undefined') {
-        showNotification('Payment system loading, please try again', 'error');
-        return;
-    }
-    
-    showLoading('Opening payment window...');
-    
-    try {
-        const handler = PaystackPop.setup({
-            key: 'pk_live_16142fe1295bff6eab1ec0888895754f8e90a96b',  // YOUR KEY - PUT IT HERE
-            email: email,
-            amount: amount * 100,  // Paystack expects amount in kobo/cents (multiply by 100)
-            currency: 'KES',
-            ref: reference,
-            metadata: {
-                custom_fields: [
-                    {
-                        display_name: "Customer Name",
-                        variable_name: "customer_name",
-                        value: user.displayName || email.split('@')[0]
-                    },
-                    {
-                        display_name: "Bypass Type",
-                        variable_name: "bypass_type",
-                        value: currentBypass.name
-                    },
-                    {
-                        display_name: "Package",
-                        variable_name: "package",
-                        value: currentPackage.name
+                // ========== PAYSTACK INTEGRATION WITH LIVE KEY ==========
+                // YOUR LIVE PAYSTACK PUBLIC KEY
+                const PAYSTACK_PUBLIC_KEY = 'pk_live_16142fe1295bff6eab1ec0888895754f8e90a96b';
+                
+                document.getElementById('payButton').onclick = () => {
+                    if (!currentPackage) {
+                        showNotification('Please select a package first', 'error');
+                        return;
                     }
-                ]
-            },
-            callback: (response) => {
-                hideLoading();
-                // Payment successful
-                addLog(`Payment successful: ${currentBypass.name} - ${currentPackage.name}`);
-                document.getElementById('paymentModal').classList.remove('active');
-                
-                const now = new Date();
-                paymentData = {
-                    userName: user.displayName || email.split('@')[0],
-                    userEmail: email,
-                    bypassName: currentBypass.name,
-                    bypassCategory: currentBypass.category,
-                    packageName: currentPackage.name,
-                    packageDays: currentPackage.days,
-                    amount: amount,
-                    paymentReference: response.reference,
-                    date: now.toLocaleDateString('en-GB'),
-                    time: now.toLocaleTimeString('en-GB')
+                    
+                    const user = auth.currentUser;
+                    if (!user) {
+                        showNotification('Please login to continue', 'error');
+                        return;
+                    }
+                    
+                    const email = user.email;
+                    const amount = currentPackage.price;
+                    const reference = 'NX-' + Date.now() + '-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+                    
+                    // Check if Paystack is loaded
+                    if (typeof PaystackPop === 'undefined') {
+                        showNotification('Payment system is loading. Please try again in a moment.', 'error');
+                        return;
+                    }
+                    
+                    showLoading('Opening secure payment window...');
+                    
+                    try {
+                        const handler = PaystackPop.setup({
+                            key: PAYSTACK_PUBLIC_KEY,
+                            email: email,
+                            amount: amount * 100, // Convert to kobo/cents
+                            currency: 'KES',
+                            ref: reference,
+                            metadata: {
+                                custom_fields: [
+                                    {
+                                        display_name: "Customer Name",
+                                        variable_name: "customer_name",
+                                        value: user.displayName || email.split('@')[0]
+                                    },
+                                    {
+                                        display_name: "Bypass Type",
+                                        variable_name: "bypass_type",
+                                        value: currentBypass.name
+                                    },
+                                    {
+                                        display_name: "Package",
+                                        variable_name: "package",
+                                        value: currentPackage.name
+                                    }
+                                ]
+                            },
+                            callback: (response) => {
+                                hideLoading();
+                                // Payment successful
+                                addLog(`Payment successful: ${currentBypass.name} - ${currentPackage.name} | Ref: ${response.reference}`);
+                                document.getElementById('paymentModal').classList.remove('active');
+                                
+                                const now = new Date();
+                                paymentData = {
+                                    userName: user.displayName || email.split('@')[0],
+                                    userEmail: email,
+                                    bypassName: currentBypass.name,
+                                    bypassCategory: currentBypass.category,
+                                    packageName: currentPackage.name,
+                                    packageDays: currentPackage.days,
+                                    amount: amount,
+                                    paymentReference: response.reference,
+                                    date: now.toLocaleDateString('en-GB'),
+                                    time: now.toLocaleTimeString('en-GB')
+                                };
+                                
+                                const detailsHtml = `
+                                    <div class="detail-row"><span class="detail-label">Bypass Type:</span><span class="detail-value">${currentBypass.name}</span></div>
+                                    <div class="detail-row"><span class="detail-label">Package:</span><span class="detail-value">${currentPackage.name}</span></div>
+                                    <div class="detail-row"><span class="detail-label">Duration:</span><span class="detail-value">${currentPackage.days} day(s)</span></div>
+                                    <div class="detail-row"><span class="detail-label">Amount Paid:</span><span class="detail-value">KES ${amount}</span></div>
+                                    <div class="detail-row"><span class="detail-label">Payment Ref:</span><span class="detail-value">${response.reference}</span></div>
+                                    <div class="detail-row"><span class="detail-label">Date & Time:</span><span class="detail-value">${paymentData.date} ${paymentData.time}</span></div>
+                                `;
+                                
+                                document.getElementById('purchaseDetails').innerHTML = detailsHtml;
+                                document.getElementById('successModal').classList.add('active');
+                                showNotification('Payment completed successfully!', 'success');
+                            },
+                            onClose: () => {
+                                hideLoading();
+                                showNotification('Payment window closed', 'info');
+                            }
+                        });
+                        
+                        handler.openIframe();
+                        hideLoading(); // Hide loading after opening the iframe
+                        
+                    } catch (error) {
+                        hideLoading();
+                        console.error('Payment error:', error);
+                        showNotification('Unable to initialize payment. Please check your internet connection and try again.', 'error');
+                    }
                 };
-                
-                const detailsHtml = `
-                    <div class="detail-row"><span class="detail-label">Bypass Type:</span><span class="detail-value">${currentBypass.name}</span></div>
-                    <div class="detail-row"><span class="detail-label">Package:</span><span class="detail-value">${currentPackage.name}</span></div>
-                    <div class="detail-row"><span class="detail-label">Duration:</span><span class="detail-value">${currentPackage.days} day(s)</span></div>
-                    <div class="detail-row"><span class="detail-label">Amount Paid:</span><span class="detail-value">KES ${amount}</span></div>
-                    <div class="detail-row"><span class="detail-label">Payment Ref:</span><span class="detail-value">${response.reference}</span></div>
-                    <div class="detail-row"><span class="detail-label">Date & Time:</span><span class="detail-value">${paymentData.date} ${paymentData.time}</span></div>
-                `;
-                
-                document.getElementById('purchaseDetails').innerHTML = detailsHtml;
-                document.getElementById('successModal').classList.add('active');
-                showNotification('Payment completed successfully!', 'success');
-            },
-            onClose: () => {
-                hideLoading();
-                showNotification('Payment window closed', 'info');
-            }
-        });
-        
-        handler.openIframe();
-        hideLoading();
-        
-    } catch (error) {
-        hideLoading();
-        console.error('Payment error:', error);
-        showNotification('Unable to initialize payment. Please try again.', 'error');
-    }
-};
                 
                 activateBtn.onclick = async () => {
                     const hardwareId = hardwareInput.value.trim();
@@ -1318,7 +1323,7 @@ document.getElementById('payButton').onclick = async () => {
                     }
                     
                     window.open(`https://wa.me/+584265907014?text=${message}`, '_blank');
-                    addLog(`Activated: ${paymentData.bypassName} - ${paymentData.packageName}`);
+                    addLog(`Activation sent: ${paymentData.bypassName} - ${paymentData.packageName} | HWID: ${hardwareId.substring(0,8)}...`);
                     showNotification('Activation request sent to WhatsApp!', 'success');
                     document.getElementById('successModal').classList.remove('active');
                 };
@@ -1331,7 +1336,8 @@ document.getElementById('payButton').onclick = async () => {
                     if (e.target === document.getElementById('successModal')) document.getElementById('successModal').classList.remove('active');
                 };
                 
-                console.log('App initialized with optimized payment system');
+                console.log('NEXUS BYPASS: Fully functional with Paystack live key integrated');
+                showNotification('Welcome to NEXUS BYPASS!', 'success');
             }
         })();
     </script>
