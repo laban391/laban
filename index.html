@@ -728,7 +728,7 @@
                     <span id="totalAmount">KES 0</span>
                 </div>
                 <button id="payButton" class="pay-button">
-                    <i class="fas fa-credit-card"></i> Lipa na Mpesa
+                    <i class="fas fa-credit-card"></i> Pay Now
                 </button>
                 
                 <div class="divider">or pay with</div>
@@ -768,7 +768,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Firebase check
             setTimeout(() => {
                 if (!window.auth) {
                     console.error('Firebase not ready');
@@ -947,21 +946,58 @@
                     }
                 };
                 
-                // ========== EXACT PAYMENT METHOD FROM YOUR SCRIPT ==========
+                // ========== FIXED PAYMENT - CORRECT AMOUNT PER PACKAGE ==========
                 const payButton = document.getElementById('payButton');
                 
                 function payWithPaystack() {
+                    if (!currentPackage) {
+                        alert('Please select a package first');
+                        return;
+                    }
+                    
+                    const user = auth.currentUser;
+                    if (!user) {
+                        alert('Please login first');
+                        return;
+                    }
+                    
                     const ref = 'TICKET_' + Date.now();
+                    const amountInCents = currentPackage.price * 100;
                     
                     const handler = PaystackPop.setup({
                         key: 'pk_live_16142fe1295bff6eab1ec0888895754f8e90a96b', 
-                        email: 'customer@example.com', 
-                        amount: 1000, 
+                        email: user.email, 
+                        amount: amountInCents,
                         currency: 'KES',
                         ref: ref,
-                        label: "Event Ticket Payment",
+                        label: "NEXUS BYPASS - " + currentPackage.name,
                         callback: function(response) {
-                            alert(`Payment successful! Reference: ${response.reference}`);
+                            addLog(`Payment successful: ${currentBypass?.name} - ${currentPackage.name} - KES ${currentPackage.price}`);
+                            document.getElementById('paymentModal').classList.remove('active');
+                            
+                            const now = new Date();
+                            paymentData = {
+                                userName: user.displayName || user.email.split('@')[0],
+                                userEmail: user.email,
+                                bypassName: currentBypass?.name,
+                                bypassCategory: currentBypass?.category,
+                                packageName: currentPackage.name,
+                                packageDays: currentPackage.days,
+                                amount: currentPackage.price,
+                                paymentReference: response.reference,
+                                date: now.toLocaleDateString(),
+                                time: now.toLocaleTimeString()
+                            };
+                            
+                            document.getElementById('purchaseDetails').innerHTML = `
+                                <div class="detail-row"><span>Bypass:</span><span>${currentBypass?.name}</span></div>
+                                <div class="detail-row"><span>Package:</span><span>${currentPackage.name}</span></div>
+                                <div class="detail-row"><span>Amount:</span><span>KES ${currentPackage.price}</span></div>
+                                <div class="detail-row"><span>Reference:</span><span>${response.reference}</span></div>
+                            `;
+                            
+                            document.getElementById('successModal').classList.add('active');
+                            alert(`Payment successful! Amount: KES ${currentPackage.price}\nReference: ${response.reference}`);
                         },
                         onClose: function() {
                             alert('Payment was not completed. You can try again.');
@@ -972,19 +1008,19 @@
                 }
                 
                 payButton.addEventListener('click', payWithPaystack);
-                // ========================================================
+                // ==============================================================
                 
                 activateBtn.onclick = async () => {
                     const hardwareId = hwInput.value.trim();
                     if (hardwareId.length !== 40) return showNotification('Hardware ID must be 40 chars', 'error');
-                    const msg = `NEXUS BYPASS ACTIVATION\nCustomer: ${paymentData?.userName || 'N/A'}\nEmail: ${paymentData?.userEmail || 'N/A'}\nBypass: ${currentBypass?.name || 'N/A'}\nPackage: ${currentPackage?.name || 'N/A'}\nHardware ID: ${hardwareId}`;
+                    const msg = `NEXUS BYPASS ACTIVATION\nCustomer: ${paymentData?.userName || 'N/A'}\nEmail: ${paymentData?.userEmail || 'N/A'}\nBypass: ${paymentData?.bypassName || 'N/A'}\nPackage: ${paymentData?.packageName || 'N/A'}\nAmount: KES ${paymentData?.amount || 'N/A'}\nRef: ${paymentData?.paymentReference || 'N/A'}\nHardware ID: ${hardwareId}`;
                     try {
                         if (auth.currentUser && paymentData) {
                             await addDoc(collection(db, 'activations'), { ...paymentData, hardwareId, activatedAt: serverTimestamp() });
                         }
                     } catch(e) {}
                     window.open(`https://wa.me/254700000000?text=${encodeURIComponent(msg)}`, '_blank');
-                    addLog(`Activation requested`);
+                    addLog(`Activation requested for ${paymentData?.bypassName || 'N/A'}`);
                     showNotification('Activation sent!', 'success');
                     document.getElementById('successModal').classList.remove('active');
                 };
@@ -999,7 +1035,7 @@
                     }
                 };
                 
-                console.log('App ready');
+                console.log('App ready - Payment uses correct package amount');
             }, 500);
         });
     </script>
